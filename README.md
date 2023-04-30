@@ -1,16 +1,9 @@
 # blurt
 
-A new Flutter project.
+Problem statement: _Many social media platforms encourage comparison and body-imaging issues.  This is largely due to the ability to post polished photos representing the finest moments of one’s life.  To address this cultural issue, the author is attempting to build a social media platform not based on physical elements but instead based on raw audio thoughts.  This will provide an alternative for those who enjoy connecting with friends while also as a platform not promoting body comparison and insecurity._
 
-## Getting Started
+Solution: **A cross-platform social media app for users to share one short 15-second audio thoughts a day and react to friends' previous day's audio thoughts.  This app will include features from logging in, to finding friends, adding and deleting audio posts, and panning audio.**
 
-This project is a starting point for a Flutter application.
+This project will be built using Dart on Flutter with a Node.JS backend hosted on Google Cloud Run.  Files will be stored remotely using Google Cloud Storage.
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Copyright 2023 Joshua Beck
