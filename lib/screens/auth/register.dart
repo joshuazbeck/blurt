@@ -1,4 +1,4 @@
-import 'package:blurt/screens/login/login.dart';
+import 'package:blurt/screens/auth/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -25,6 +25,11 @@ class _RegisterState extends State<Register> {
 
 class RegisterForm extends StatefulWidget {
   const RegisterForm({super.key});
+
+  static const emailFieldKey = Key("email");
+  static const passwordFieldKey = Key("password");
+  static const passwordConfirmFieldKey = Key("passwordConfirm");
+  static const registerBntKey = Key("register");
 
   @override
   State<RegisterForm> createState() => _RegisterFormState();
@@ -97,6 +102,7 @@ class _RegisterFormState extends State<RegisterForm> {
         TextFormField(
           keyboardType: TextInputType.emailAddress,
           decoration: _emailDecorator,
+          key: RegisterForm.emailFieldKey,
           style: TextStyle(
               color: Colors.black,
               fontFamily: GoogleFonts.josefinSlab().fontFamily),
@@ -121,6 +127,7 @@ class _RegisterFormState extends State<RegisterForm> {
         SizedBox(height: 20),
         TextFormField(
           obscureText: true,
+          key: RegisterForm.passwordFieldKey,
           style: TextStyle(
               color: Colors.black,
               fontFamily: GoogleFonts.josefinSlab().fontFamily),
@@ -136,6 +143,7 @@ class _RegisterFormState extends State<RegisterForm> {
         SizedBox(height: 20),
         TextFormField(
           obscureText: true,
+          key: RegisterForm.passwordConfirmFieldKey,
           style: TextStyle(
               color: Colors.black,
               fontFamily: GoogleFonts.josefinSlab().fontFamily),
@@ -166,6 +174,7 @@ class _RegisterFormState extends State<RegisterForm> {
       ]),
       bottomButton: Container(
         child: IconButton(
+          key: RegisterForm.registerBntKey,
           icon: Icon(Icons.arrow_forward_ios),
           onPressed: _registerUser,
           color: Colors.white,
@@ -176,7 +185,7 @@ class _RegisterFormState extends State<RegisterForm> {
   }
 
   void _openLogin() {
-    Navigator.push(
+    Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => MainAuth(page: Login())),
     );
@@ -188,7 +197,8 @@ class _RegisterFormState extends State<RegisterForm> {
         AuthService _auth = AuthService();
         User? _user = await _auth.registerNewUser(_email, _password);
 
-        Navigator.push(
+        print("Registering a new user");
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(
               builder: (context) => MainAuth(page: RegisterInfo())),

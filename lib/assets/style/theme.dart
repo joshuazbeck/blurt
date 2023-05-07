@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class BlurtTheme {
-  ThemeData primary = ThemeData(primaryColor: Colors.red).copyWith(
+  ThemeData primary =
+      ThemeData(primaryColor: Color.fromRGBO(243, 96, 102, 1)).copyWith(
     textTheme: TextTheme(
+      
       headlineMedium: GoogleFonts.josefinSlab(
           fontSize: 40, color: Colors.black, fontWeight: FontWeight.bold),
       headlineSmall: GoogleFonts.josefinSlab(

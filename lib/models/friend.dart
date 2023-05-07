@@ -5,9 +5,15 @@ import 'enums.dart';
  */
 class Friend {
   final String imageUrl;
-  final String name;
+  final String firstname;
+  final String lastname;
+  String getName() {
+    return firstname + " " + lastname;
+  }
+
   final String username;
   final FriendStatus friendStatus;
 
-  Friend(this.imageUrl, this.name, this.username, this.friendStatus);
+  Friend(this.imageUrl, this.firstname, this.lastname, this.username,
+      this.friendStatus);
 }

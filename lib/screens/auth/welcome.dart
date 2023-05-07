@@ -1,5 +1,5 @@
-import 'package:blurt/screens/login/register.dart';
-import 'package:blurt/screens/login/register_info.dart';
+import 'package:blurt/screens/auth/register.dart';
+import 'package:blurt/screens/auth/register_info.dart';
 import 'package:blurt/services/auth_service.dart';
 import 'package:blurt/services/shared.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -46,7 +46,7 @@ class _WelcomePageState extends State<WelcomePage> {
   }
 
   void _next() {
-    Navigator.push(
+    Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => MainAuth(page: Register())),
     );

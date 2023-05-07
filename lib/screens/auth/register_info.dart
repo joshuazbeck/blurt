@@ -28,6 +28,13 @@ class _RegisterInfoState extends State<RegisterInfo> {
 class RegisterPersonalForm extends StatefulWidget {
   const RegisterPersonalForm({super.key});
 
+  static const usernameKey = Key("username");
+  static const firstNameKey = Key("firstName");
+  static const lastNameKey = Key("lastName");
+  static const phoneNumKey = Key("phone#");
+  static const bdayKey = Key("bday");
+  static const addInfoBnt = Key("addRegisterInfo");
+
   @override
   State<RegisterPersonalForm> createState() => _RegisterPersonalFormState();
 }
@@ -37,10 +44,20 @@ class _RegisterPersonalFormState extends State<RegisterPersonalForm> {
   String? _firstName;
   String? _lastName;
   String? _phoneNumber;
+  String? _username;
   DateTime? _date;
 
   bool _checked = false;
 
+  InputDecoration _usernameDecorator = InputDecoration(
+    hintText: "enter username",
+    filled: true,
+    fillColor: Colors.grey[200],
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(10),
+      borderSide: BorderSide.none,
+    ),
+  );
   InputDecoration _firstNameDecorator = InputDecoration(
     hintText: "enter first name",
     filled: true,
@@ -73,9 +90,8 @@ class _RegisterPersonalFormState extends State<RegisterPersonalForm> {
     filled: true,
     fillColor: Colors.grey[200],
     border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(10),
-      borderSide: BorderSide.none,
-    ),
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(color: Colors.pink)),
   );
   @override
   Widget build(BuildContext context) {
@@ -94,6 +110,23 @@ class _RegisterPersonalFormState extends State<RegisterPersonalForm> {
             ])),
         Spacer(flex: 1),
         TextFormField(
+          key: RegisterPersonalForm.usernameKey,
+          style: TextStyle(
+              color: Colors.black,
+              fontFamily: GoogleFonts.josefinSlab().fontFamily),
+          decoration: _usernameDecorator,
+          validator: (value) {
+            _username = value;
+            if (value == null || value.isEmpty) {
+              return 'please enter a username';
+            }
+
+            return null;
+          },
+        ),
+        SizedBox(height: 20),
+        TextFormField(
+          key: RegisterPersonalForm.firstNameKey,
           style: TextStyle(
               color: Colors.black,
               fontFamily: GoogleFonts.josefinSlab().fontFamily),
@@ -109,6 +142,7 @@ class _RegisterPersonalFormState extends State<RegisterPersonalForm> {
         ),
         SizedBox(height: 20),
         TextFormField(
+          key: RegisterPersonalForm.lastNameKey,
           style: TextStyle(
               color: Colors.black,
               fontFamily: GoogleFonts.josefinSlab().fontFamily),
@@ -124,6 +158,7 @@ class _RegisterPersonalFormState extends State<RegisterPersonalForm> {
         ),
         SizedBox(height: 20),
         TextFormField(
+          key: RegisterPersonalForm.phoneNumKey,
           inputFormatters: [
             FilteringTextInputFormatter.digitsOnly,
             MaskedTextInputFormatter('(###) ###-####')
@@ -144,6 +179,7 @@ class _RegisterPersonalFormState extends State<RegisterPersonalForm> {
         ),
         SizedBox(height: 20),
         DateTimeField(
+          key: RegisterPersonalForm.bdayKey,
           style: TextStyle(
               color: Colors.black,
               fontFamily: GoogleFonts.josefinSlab().fontFamily),
@@ -176,6 +212,7 @@ class _RegisterPersonalFormState extends State<RegisterPersonalForm> {
         ),
       ]),
       bottomButton: IconButton(
+        key: RegisterPersonalForm.addInfoBnt,
         icon: Icon(Icons.check_rounded),
         onPressed: _addInfo,
         color: Colors.white,
@@ -185,7 +222,7 @@ class _RegisterPersonalFormState extends State<RegisterPersonalForm> {
   }
 
   void _openDashboard() {
-    Navigator.push(
+    Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => Main(page: Dashboard())),
     );
@@ -202,15 +239,16 @@ class _RegisterPersonalFormState extends State<RegisterPersonalForm> {
         if (_firstName == null ||
             _lastName == null ||
             _phoneNumber == null ||
-            _date == null) {
+            _date == null ||
+            _username == null) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Some fields are empty')),
           );
 
           return;
         }
-        _auth.addFullUser(
-            user, _firstName!, _lastName!, _phoneNumber!, _date.toString());
+        _auth.addFullUser(user, _username!, _firstName!, _lastName!,
+            _phoneNumber!, _date.toString());
         _openDashboard();
       }
     }

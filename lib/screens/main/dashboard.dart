@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:blurt/screens/templates/template.dart';
+import 'package:blurt/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
@@ -10,8 +11,11 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 
 import '../../data/api.dart';
+import '../../main.dart';
 import '../../models/blurt.dart';
 import 'dart:math';
+
+import '../record/record.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
@@ -21,7 +25,10 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
-  final controller = PageController(viewportFraction: 0.4, keepPage: true);
+  final controller = PageController(
+    viewportFraction: 0.4,
+    keepPage: true,
+  );
   Iterable<Blurt> _blurts = [];
   Random random = Random();
   @override
@@ -30,7 +37,7 @@ class _DashboardState extends State<Dashboard> {
       getBlurts();
       setState(() {});
     });
-    _initRecordController();
+
     super.initState();
   }
 
@@ -38,10 +45,15 @@ class _DashboardState extends State<Dashboard> {
     //Make sure we already have permissions for contacts when we get to this
     //page, so we can just retrieve it
     API api = API();
-    api.getBlurts().then((value) {
-      setState(() {
-        _blurts = value;
-      });
+    AuthService authService = new AuthService();
+    authService.getAuthenticatedUser().then((value) {
+      if (value != null && value.username != null) {
+        api.getBlurts(value.username!).then((value) {
+          setState(() {
+            _blurts = value;
+          });
+        });
+      }
     });
   }
 
@@ -54,105 +66,70 @@ class _DashboardState extends State<Dashboard> {
             : Center(child: const CircularProgressIndicator()));
 
     return Template(
-      child: (_isRecording)
-          ? Center(
-              child: AudioWaveforms(
-                enableGesture: true,
-                size: Size(MediaQuery.of(context).size.width / 1.2, 50),
-                recorderController: recorderController,
-                waveStyle: const WaveStyle(
-                  waveColor: Colors.white,
-                  extendWaveform: true,
-                  showMiddleLine: false,
-                ),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12.0),
-                  color: Theme.of(context).primaryColor,
-                ),
-                padding: const EdgeInsets.only(left: 18),
-                margin: const EdgeInsets.symmetric(horizontal: 15),
+      child: Row(children: [
+        Container(
+            width: 50,
+            child: SmoothPageIndicator(
+              controller: controller,
+              count: pages.length,
+              effect: const ExpandingDotsEffect(
+                dotHeight: 16,
+                dotWidth: 16,
+                activeDotColor: Colors.red,
               ),
-            )
-          : Row(children: [
-              Container(
-                  width: 50,
-                  child: SmoothPageIndicator(
-                    controller: controller,
-                    count: pages.length,
-                    effect: const ExpandingDotsEffect(
-                      dotHeight: 16,
-                      dotWidth: 16,
-                      activeDotColor: Colors.red,
-                    ),
-                    axisDirection: Axis.vertical,
-                  )),
-              Expanded(
-                  child: Padding(
-                      padding: EdgeInsets.all(30),
-                      child: SingleChildScrollView(
-                          child: Container(
-                              child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: <Widget>[
-                            SizedBox(height: 16),
-                            (pages.length > 0)
-                                ? SizedBox(
-                                    height: 720,
-                                    child: PageView.builder(
-                                      controller: controller,
-                                      itemBuilder: (_, index) {
-                                        if (pages.length > 0) {
-                                          return pages[index % pages.length];
-                                        } else
-                                          return null;
-                                      },
-                                      scrollDirection: Axis.vertical,
-                                    ),
-                                  )
-                                : Center(
-                                    child: const CircularProgressIndicator()),
-                            IconButton(
-                                icon: Icon(Icons.play_arrow),
-                                color: Colors.white,
-                                iconSize: 50,
-                                onPressed: () async {
+              axisDirection: Axis.vertical,
+            )),
+        Expanded(
+            child: Padding(
+                padding: EdgeInsets.all(30),
+                child: SingleChildScrollView(
+                    child: Container(
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: <Widget>[
+                      SizedBox(height: 16),
+                      (pages.length > 0)
+                          ? SizedBox(
+                              height: 720,
+                              child: PageView.builder(
+                                controller: controller,
+                                itemBuilder: (_, index) {
+                                  if (pages.length > 0) {
+                                    return pages[index % pages.length];
+                                  } else
+                                    return null;
+                                },
+                                scrollDirection: Axis.vertical,
+                                itemCount: pages.length,
+                              ),
+                            )
+                          : Center(child: const CircularProgressIndicator()),
+                      IconButton(
+                          icon: Icon(Icons.play_arrow),
+                          color: Colors.white,
+                          iconSize: 50,
+                          onPressed: () async {
 // Extract waveform data
-                                  // await controller.startPlayer(finishMode: FinishMode.stop);
-                                }),
-                          ])))))
-            ]),
+                            // await controller.startPlayer(finishMode: FinishMode.stop);
+                          }),
+                    ])))))
+      ]),
       bottomButton: IconButton(
-        icon: _isRecording ? Icon(Icons.fiber_manual_record) : Icon(Icons.mic),
-        onPressed: _startStopRecording,
+        icon: Icon(Icons.mic),
+        onPressed: () {
+          _openRecorder(context);
+        },
         color: Colors.white,
         iconSize: 40,
       ),
     );
   }
 
-  bool _isRecording = false;
-  late final RecorderController recorderController;
-  String _recordPath = "/hi";
-  void _startStopRecording() async {
-    if (_isRecording) {
-      setState(() {
-        _isRecording = false;
-      });
-      await recorderController.stop();
-    } else {
-      setState(() {
-        _isRecording = true;
-      });
-      await recorderController.record();
-    }
-  }
-
-  void _initRecordController() {
-    recorderController = RecorderController()
-      ..androidEncoder = AndroidEncoder.aac
-      ..androidOutputFormat = AndroidOutputFormat.mpeg4
-      ..iosEncoder = IosEncoder.kAudioFormatMPEG4AAC
-      ..sampleRate = 16000;
+  void _openRecorder(BuildContext context) async {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => MainAuth(page: Record())),
+    );
   }
 }
 
@@ -218,64 +195,65 @@ class _BlurtRowState extends State<BlurtRow> {
   @override
   Widget build(BuildContext context) {
     return Container(
+        key: Key("josh"),
         child: Column(children: [
-      Row(
-        children: [
-          Text(widget.blurt.friend.name,
-              style: Theme.of(context).textTheme.bodySmall),
-          Spacer(),
-          Text("${widget.blurt.length} sec",
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall
-                  ?.copyWith(fontWeight: FontWeight.bold)),
-        ],
-      ),
-      SizedBox(
-        height: 16,
-      ),
-      Row(children: [
-        Flexible(
-            child: Text(widget.blurt.title,
-                style: Theme.of(context).textTheme.bodyLarge)),
-      ]),
-      SizedBox(
-        height: 19,
-      ),
-      (!_isLoading)
-          ? Container(
-              child: Row(
-                children: [
-                  IconButton(
-                      icon: _playIcon,
-                      color: Colors.white,
-                      iconSize: 30,
-                      onPressed: _pauseOrPlay),
-                  Expanded(
-                      child: AudioFileWaveforms(
-                          size: Size(100.0, 70.0),
-                          enableSeekGesture: true,
-                          playerWaveStyle: const PlayerWaveStyle(
-                              liveWaveColor: Colors.white,
-                              fixedWaveColor: Colors.white24,
-                              showSeekLine: false,
-                              waveThickness: 6,
-                              spacing: 9,
-                              scaleFactor: 150.0,
-                              waveCap: StrokeCap.round),
-                          playerController: controller))
-                ],
-              ),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20.0),
-                color: Theme.of(context).primaryColor,
-              ),
-            )
-          : Center(child: CircularProgressIndicator()),
-      SizedBox(
-        height: 20,
-      ),
-    ]));
+          Row(
+            children: [
+              Text(widget.blurt.friend.getName(),
+                  style: Theme.of(context).textTheme.bodySmall),
+              Spacer(),
+              Text("${widget.blurt.length} sec",
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(fontWeight: FontWeight.bold)),
+            ],
+          ),
+          SizedBox(
+            height: 16,
+          ),
+          Row(children: [
+            Flexible(
+                child: Text(widget.blurt.title,
+                    style: Theme.of(context).textTheme.bodyLarge)),
+          ]),
+          SizedBox(
+            height: 19,
+          ),
+          (!_isLoading)
+              ? Container(
+                  child: Row(
+                    children: [
+                      IconButton(
+                          icon: _playIcon,
+                          color: Colors.white,
+                          iconSize: 30,
+                          onPressed: _pauseOrPlay),
+                      Expanded(
+                          child: AudioFileWaveforms(
+                              size: Size(100.0, 70.0),
+                              enableSeekGesture: true,
+                              playerWaveStyle: const PlayerWaveStyle(
+                                  liveWaveColor: Colors.white,
+                                  fixedWaveColor: Colors.white24,
+                                  showSeekLine: false,
+                                  waveThickness: 6,
+                                  spacing: 9,
+                                  scaleFactor: 150.0,
+                                  waveCap: StrokeCap.round),
+                              playerController: controller))
+                    ],
+                  ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20.0),
+                    color: Theme.of(context).primaryColor,
+                  ),
+                )
+              : Center(child: CircularProgressIndicator()),
+          SizedBox(
+            height: 20,
+          ),
+        ]));
   }
 
   void _pauseOrPlay() async {

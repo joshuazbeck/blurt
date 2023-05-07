@@ -1,3 +1,4 @@
+import 'package:blurt/services/auth_service.dart';
 import 'package:contacts_service/contacts_service.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -19,19 +20,25 @@ class _FriendsAddState extends State<FriendsAdd> {
   @override
   void initState() {
     WidgetsBinding.instance!.addPostFrameCallback((_) {
-      getContacts();
+      AuthService authService = new AuthService();
+      authService.getAuthenticatedUser().then((value) {
+        if (value != null && value.username != null) {
+          getContacts(value.username!);
+        }
+      });
+
       setState(() {});
     });
     super.initState();
   }
 
-  Future<void> getContacts() async {
+  Future<void> getContacts(String username) async {
     //Make sure we already have permissions for contacts when we get to this
     //page, so we can just retrieve it
     final Iterable<Contact> contacts = await ContactsService.getContacts();
     if (contacts.isNotEmpty) {
       API api = API();
-      api.getFriendsMatchingContact().then((value) {
+      api.getFriendsMatchingContact(username).then((value) {
         setState(() {
           _contacts = value;
         });
@@ -60,7 +67,7 @@ class _FriendsAddState extends State<FriendsAdd> {
                 Friend friends = _contacts.elementAt(index);
                 return FriendRow(
                     imageUrl: friends.imageUrl,
-                    name: friends.name,
+                    name: friends.getName(),
                     username: friends.username,
                     friendStatus: friends.friendStatus);
               },

@@ -1,10 +1,11 @@
-import 'package:blurt/screens/login/register.dart';
+import 'package:blurt/screens/auth/register.dart';
 import 'package:blurt/services/auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../main.dart';
+import '../../services/shared.dart';
 import '../main/dashboard.dart';
 import '../templates/template_form.dart';
 
@@ -19,19 +20,24 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   @override
   Widget build(BuildContext context) {
-    return RegisterForm();
+    return LoginForm();
   }
 }
 
-class RegisterForm extends StatefulWidget {
-  const RegisterForm({super.key});
+class LoginForm extends StatefulWidget {
+  const LoginForm({super.key});
+
+  static const emailFieldKey = Key("email");
+  static const passwordFieldKey = Key("password");
+  static const loginBntKey = Key("login");
 
   @override
-  State<RegisterForm> createState() => _RegisterFormState();
+  State<LoginForm> createState() => _LoginFormState();
 }
 
-class _RegisterFormState extends State<RegisterForm> {
+class _LoginFormState extends State<LoginForm> {
   final _formKey = GlobalKey<FormState>();
+
   String _email = "";
   String _password = "";
   String _confirmPassword = "";
@@ -71,6 +77,7 @@ class _RegisterFormState extends State<RegisterForm> {
           flex: 1,
         ),
         TextFormField(
+          key: LoginForm.emailFieldKey,
           style: TextStyle(
               color: Colors.black,
               fontFamily: GoogleFonts.josefinSlab().fontFamily),
@@ -85,6 +92,7 @@ class _RegisterFormState extends State<RegisterForm> {
         ),
         SizedBox(height: 20),
         TextFormField(
+          key: LoginForm.passwordFieldKey,
           style: TextStyle(
               color: Colors.black,
               fontFamily: GoogleFonts.josefinSlab().fontFamily),
@@ -107,6 +115,7 @@ class _RegisterFormState extends State<RegisterForm> {
                 style: Theme.of(context).textTheme.labelSmall))
       ]),
       bottomButton: IconButton(
+        key: LoginForm.loginBntKey,
         icon: Icon(Icons.add),
         onPressed: _submitForm,
         color: Colors.white,
@@ -116,7 +125,7 @@ class _RegisterFormState extends State<RegisterForm> {
   }
 
   void _openRegister() {
-    Navigator.push(
+    Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => MainAuth(page: Register())),
     );
@@ -127,14 +136,17 @@ class _RegisterFormState extends State<RegisterForm> {
       AuthService _auth = AuthService();
       User? _user = await _auth.signInWithEmailAndPassword(_email, _password);
       if (_user != null) {
-        Navigator.push(
+        Shared.saveLogin(_email, _password);
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => Main(page: Dashboard())),
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Login failed')),
-        );
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Login failed')),
+          );
+        }
       }
     }
   }

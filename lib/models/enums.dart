@@ -1,4 +1,4 @@
 /**
  * Holds the various friend statuses
  */
-enum FriendStatus { active, pending, declined, blocked, inactive }
+enum FriendStatus { active, pending, declined, blocked, inactive, requested }

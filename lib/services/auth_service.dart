@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 class FullUser {
   String? uid;
   String? email;
+  String? username;
   String? firstName;
   String? lastName;
   String? phoneNumber;
@@ -46,24 +47,43 @@ class AuthService {
     FullUser fullUser = FullUser();
 
     DocumentSnapshot doc = await _userRef.get();
+    if (doc.data() == null) return null;
+    final data = doc.data() as Map<String, dynamic>;
     if (doc.exists) {
-      fullUser.uid = doc.get('uid');
-      fullUser.email = doc.get('email');
-      fullUser.firstName = doc.get('firstName');
-      fullUser.lastName = doc.get('lastName');
-      fullUser.phoneNumber = doc.get('phoneNumber');
-      fullUser.birthDate = doc.get('birthDate');
+      if (data.containsKey('uid')) {
+        fullUser.uid = data['uid'];
+      }
+      if (data.containsKey('email')) {
+        fullUser.email = data['email'];
+      }
+      if (data.containsKey('firstName')) {
+        fullUser.firstName = data['firstName'];
+      }
+      if (data.containsKey('lastName')) {
+        fullUser.lastName = data['lastName'];
+      }
+      if (data.containsKey('phoneNumber')) {
+        fullUser.phoneNumber = data['phoneNumber'];
+      }
+      if (data.containsKey('birthDate')) {
+        fullUser.birthDate = data['birthDate'];
+      }
+
+      if (data.containsKey('username')) {
+        fullUser.username = data['username'];
+      }
       return fullUser;
     } else {
       return null;
     }
   }
 
-  void addFullUser(User user, String firstName, String lastName,
-      String phoneNumber, String birthDate) {
+  void addFullUser(User user, String username, String firstName,
+      String lastName, String phoneNumber, String birthDate) {
     var _userArr = <String, String>{
       "uid": user.uid,
       "email": user.email ?? "",
+      "username": username,
       "firstName": firstName,
       "lastName": lastName,
       "phoneNumber": phoneNumber,
@@ -72,6 +92,16 @@ class AuthService {
 
     FirebaseFirestore doc = FirebaseFirestore.instance;
     doc.collection("users").doc(user.uid.toString()).set(_userArr);
+  }
+
+  Future<FullUser?> getAuthenticatedUser() async {
+    FirebaseAuth auth = FirebaseAuth.instance;
+    User? currentUser = auth.currentUser;
+    if (currentUser != null) {
+      return getFullUser(currentUser);
+    } else {
+      return null;
+    }
   }
 
   Future signOut() {
@@ -84,7 +114,6 @@ class AuthService {
   Future<User?> signInWithEmailAndPassword(
       String email, String password) async {
     FirebaseAuth auth = FirebaseAuth.instance;
-
     try {
       UserCredential userCredential = await auth.signInWithEmailAndPassword(
         email: email,

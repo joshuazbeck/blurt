@@ -1,8 +1,10 @@
-import 'package:blurt/screens/login/register_info.dart';
-import 'package:blurt/screens/login/login.dart';
-import 'package:blurt/screens/login/register.dart';
-import 'package:blurt/screens/login/welcome.dart';
+import 'package:blurt/screens/auth/register_info.dart';
+import 'package:blurt/screens/auth/login.dart';
+import 'package:blurt/screens/auth/register.dart';
+import 'package:blurt/screens/auth/welcome.dart';
 import 'package:blurt/screens/main/dashboard.dart';
+import 'package:blurt/screens/main/manage_friends.dart';
+import 'package:blurt/screens/profile/profile.dart';
 import 'package:blurt/services/auth_service.dart';
 import 'package:blurt/services/shared.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -17,6 +19,7 @@ import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -39,6 +42,7 @@ class _RoutingControllerState extends State<RoutingController> {
 
   Future _build() async {
     User? _user = await Shared.isLoggedIn();
+    print(_user);
     if (_user != null) {
       AuthService authService = AuthService();
 
@@ -75,7 +79,8 @@ class _RoutingControllerState extends State<RoutingController> {
 
 class Main extends StatelessWidget {
   final StatefulWidget page;
-  Main({super.key, required this.page});
+  String text = "blurt.";
+  Main({super.key, required this.page, this.text = "blurt."});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -85,7 +90,7 @@ class Main extends StatelessWidget {
             title: Row(children: [
               GestureDetector(
                 onTap: () {
-                  print("HEYO");
+                  _openProfile(context);
                 },
                 child: CircleAvatar(
                   backgroundImage: NetworkImage('https://picsum.photos/200'),
@@ -93,12 +98,12 @@ class Main extends StatelessWidget {
                 ),
               ),
               Spacer(),
-              const Text('blurt.'),
+              Text(this.text),
               Spacer(),
               IconButton(
                 icon: Icon(Icons.person),
                 onPressed: () {
-                  _openProfile(context);
+                  _manageFriends(context);
                 },
                 color: Colors.white,
               ),
@@ -107,11 +112,42 @@ class Main extends StatelessWidget {
   }
 
   void _openProfile(BuildContext context) async {
-    AuthService authService = AuthService();
-    await authService.signOut();
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => MainAuth(page: Login())),
+      MaterialPageRoute(
+          builder: (context) =>
+              MainSecondary(page: Profile(), text: "profile.")),
     );
+  }
+
+  void _manageFriends(BuildContext context) async {
+    // AuthService authService = AuthService();
+    // await authService.signOut();
+    Navigator.of(context).push(
+      MaterialPageRoute(
+          builder: (context) =>
+              MainSecondary(page: ManageFriends(), text: "friends.")),
+    );
+  }
+}
+
+class MainSecondary extends StatelessWidget {
+  final StatefulWidget page;
+  String text = "blurt.";
+  MainSecondary({super.key, required this.page, this.text = "blurt."});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+            automaticallyImplyLeading: false,
+            backgroundColor: Theme.of(context).primaryColor,
+            title: Row(children: [
+              Spacer(),
+              Text(this.text),
+              Spacer(),
+            ])),
+        body: page);
   }
 }
 
@@ -121,47 +157,9 @@ class MainAuth extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(backgroundColor: Colors.white, body: page);
-
-    FirebaseAuth instance = FirebaseAuth.instance;
-    if (instance.currentUser != null) {
-      AuthService _auth = AuthService();
-      // FullUser? fullUser = await _auth.getFullUser(instance.currentUser!);
-      // if (fullUser != null) {
-      //   //Show the current dashboard
-      // } else {
-      //   //Show the complete profile
-      // }
-    } else {
-      //Show login or registration
-    }
-//     return StreamBuilder<User?>(
-//       stream: FirebaseAuth.instance.authStateChanges(),
-//       builder: (context, snapshot) {
-//         if (!snapshot.hasData) {
-//           return MaterialApp(
-//             title: 'Blurt',
-//             theme: ThemeData(
-//               fontFamily: "Josefin Slab",
-//               colorScheme: ColorScheme.fromSeed(
-//                   seedColor:
-//                       Color(int.parse("F77777", radix: 16)).withOpacity(1.0)),
-//             ),
-//             home: const Layout(),
-//           );
-//         }
-
-//         return MaterialApp(
-//           title: 'Blurt',
-//           theme: ThemeData(
-//             fontFamily: "Josefin Slab",
-//             colorScheme: ColorScheme.fromSeed(
-//                 seedColor:
-//                     Color(int.parse("F77777", radix: 16)).withOpacity(1.0)),
-//           ),
-//           home: const Layout(),
-//         );
-//       },
-//     );
+    return Scaffold(
+        resizeToAvoidBottomInset: false,
+        backgroundColor: Colors.white,
+        body: page);
   }
 }
