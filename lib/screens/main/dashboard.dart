@@ -6,9 +6,7 @@ import 'package:blurt/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
-import 'package:path_provider/path_provider.dart';
 
 import '../../data/api.dart';
 import '../../main.dart';
@@ -24,30 +22,47 @@ class Dashboard extends StatefulWidget {
   State<Dashboard> createState() => _DashboardState();
 }
 
+/// The feed for the app (the dashboard)
 class _DashboardState extends State<Dashboard> {
+  /// The controller responsible for paging
   final controller = PageController(
     viewportFraction: 0.4,
     keepPage: true,
   );
+
+  /// Hold a list of blurts
   Iterable<Blurt> _blurts = [];
+
+  /// Build a random number generator
   Random random = Random();
+
+  /// Initialize the page
   @override
   void initState() {
-    WidgetsBinding.instance!.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Get the blurts
       getBlurts();
+
+      // Refresh state
       setState(() {});
     });
 
     super.initState();
   }
 
+  /// Get the available blurts from the API service
   Future<void> getBlurts() async {
-    //Make sure we already have permissions for contacts when we get to this
-    //page, so we can just retrieve it
+    // Create an instance of the API
     API api = API();
-    AuthService authService = new AuthService();
+
+    // Create a new instance of the authentication service
+    AuthService authService = AuthService();
+
+    // Get the authenticated users
     authService.getAuthenticatedUser().then((value) {
+      // If the user is logged in
       if (value != null && value.username != null) {
+        // Get the blurts for the user
         api.getBlurts(value.username!).then((value) {
           setState(() {
             _blurts = value;
@@ -57,15 +72,24 @@ class _DashboardState extends State<Dashboard> {
     });
   }
 
+  /// Build the form for the dashboard
   @override
   Widget build(BuildContext context) {
     final pages = List.generate(
         _blurts.length,
         (index) => _blurts.elementAt(index) != null
             ? BlurtRow(expanded: false, blurt: _blurts.elementAt(index))
-            : Center(child: const CircularProgressIndicator()));
+            : const Center(child: CircularProgressIndicator()));
 
     return Template(
+      bottomButton: IconButton(
+        icon: const Icon(Icons.mic),
+        onPressed: () {
+          _openRecorder(context);
+        },
+        color: Colors.white,
+        iconSize: 40,
+      ),
       child: Row(children: [
         Container(
             width: 50,
@@ -81,50 +105,42 @@ class _DashboardState extends State<Dashboard> {
             )),
         Expanded(
             child: Padding(
-                padding: EdgeInsets.all(30),
+                padding: const EdgeInsets.all(30),
                 child: SingleChildScrollView(
-                    child: Container(
-                        child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: <Widget>[
-                      SizedBox(height: 16),
-                      (pages.length > 0)
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: <Widget>[
+                      const SizedBox(height: 16),
+                      (pages.isNotEmpty)
                           ? SizedBox(
                               height: 720,
                               child: PageView.builder(
                                 controller: controller,
                                 itemBuilder: (_, index) {
-                                  if (pages.length > 0) {
+                                  if (pages.isNotEmpty) {
                                     return pages[index % pages.length];
-                                  } else
+                                  } else {
                                     return null;
+                                  }
                                 },
                                 scrollDirection: Axis.vertical,
                                 itemCount: pages.length,
                               ),
                             )
-                          : Center(child: const CircularProgressIndicator()),
+                          : const Center(child: CircularProgressIndicator()),
                       IconButton(
-                          icon: Icon(Icons.play_arrow),
+                          icon: const Icon(Icons.play_arrow),
                           color: Colors.white,
                           iconSize: 50,
                           onPressed: () async {
-// Extract waveform data
-                            // await controller.startPlayer(finishMode: FinishMode.stop);
+                            //TODO: Implement method
                           }),
-                    ])))))
+                    ]))))
       ]),
-      bottomButton: IconButton(
-        icon: Icon(Icons.mic),
-        onPressed: () {
-          _openRecorder(context);
-        },
-        color: Colors.white,
-        iconSize: 40,
-      ),
     );
   }
 
+  // Open the recorder
   void _openRecorder(BuildContext context) async {
     Navigator.push(
       context,
@@ -133,6 +149,7 @@ class _DashboardState extends State<Dashboard> {
   }
 }
 
+/// Create a row widget for each blurt
 class BlurtRow extends StatefulWidget {
   final bool expanded;
   final Blurt blurt;
@@ -143,18 +160,14 @@ class BlurtRow extends StatefulWidget {
 }
 
 class _BlurtRowState extends State<BlurtRow> {
-  Icon _playIcon = Icon(Icons.play_arrow);
+  Icon _playIcon = const Icon(Icons.play_arrow);
   bool _playing = false;
   bool _isLoading = true;
   bool _widgetDisposed = false;
   PlayerController controller = PlayerController();
 
+  ////Initialize the player
   Future<void> initPlayer() async {
-    // Directory appDocDir = await getApplicationDocumentsDirectory();
-    // String appDocPath = appDocDir.path;
-    // print(appDocPath);
-
-    // String path = appDocPath + '/PinkPanther60.wav';
     Directory tempDir = await getTemporaryDirectory();
     String path = '${tempDir.path}/temp_audio.wav';
 
@@ -187,92 +200,91 @@ class _BlurtRowState extends State<BlurtRow> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     initPlayer();
   }
 
+  /// ******* BUILD THE WIDGET *********
   @override
   Widget build(BuildContext context) {
     return Container(
-        key: Key("josh"),
         child: Column(children: [
-          Row(
-            children: [
-              Text(widget.blurt.friend.getName(),
-                  style: Theme.of(context).textTheme.bodySmall),
-              Spacer(),
-              Text("${widget.blurt.length} sec",
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(fontWeight: FontWeight.bold)),
-            ],
-          ),
-          SizedBox(
-            height: 16,
-          ),
-          Row(children: [
-            Flexible(
-                child: Text(widget.blurt.title,
-                    style: Theme.of(context).textTheme.bodyLarge)),
-          ]),
-          SizedBox(
-            height: 19,
-          ),
-          (!_isLoading)
-              ? Container(
-                  child: Row(
-                    children: [
-                      IconButton(
-                          icon: _playIcon,
-                          color: Colors.white,
-                          iconSize: 30,
-                          onPressed: _pauseOrPlay),
-                      Expanded(
-                          child: AudioFileWaveforms(
-                              size: Size(100.0, 70.0),
-                              enableSeekGesture: true,
-                              playerWaveStyle: const PlayerWaveStyle(
-                                  liveWaveColor: Colors.white,
-                                  fixedWaveColor: Colors.white24,
-                                  showSeekLine: false,
-                                  waveThickness: 6,
-                                  spacing: 9,
-                                  scaleFactor: 150.0,
-                                  waveCap: StrokeCap.round),
-                              playerController: controller))
-                    ],
-                  ),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20.0),
-                    color: Theme.of(context).primaryColor,
-                  ),
-                )
-              : Center(child: CircularProgressIndicator()),
-          SizedBox(
-            height: 20,
-          ),
-        ]));
+      Row(
+        children: [
+          Text(widget.blurt.friend.getName(),
+              style: Theme.of(context).textTheme.bodySmall),
+          const Spacer(),
+          Text("${widget.blurt.length} sec",
+              style: Theme.of(context)
+                  .textTheme
+                  .bodySmall
+                  ?.copyWith(fontWeight: FontWeight.bold)),
+        ],
+      ),
+      const SizedBox(
+        height: 16,
+      ),
+      Row(children: [
+        Flexible(
+            child: Text(widget.blurt.title,
+                style: Theme.of(context).textTheme.bodyLarge)),
+      ]),
+      const SizedBox(
+        height: 19,
+      ),
+      (!_isLoading)
+          ? Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20.0),
+                color: Theme.of(context).primaryColor,
+              ),
+              child: Row(
+                children: [
+                  IconButton(
+                      icon: _playIcon,
+                      color: Colors.white,
+                      iconSize: 30,
+                      onPressed: _pauseOrPlay),
+                  Expanded(
+                      child: AudioFileWaveforms(
+                          size: const Size(100.0, 70.0),
+                          enableSeekGesture: true,
+                          playerWaveStyle: const PlayerWaveStyle(
+                              liveWaveColor: Colors.white,
+                              fixedWaveColor: Colors.white24,
+                              showSeekLine: false,
+                              waveThickness: 6,
+                              spacing: 9,
+                              scaleFactor: 150.0,
+                              waveCap: StrokeCap.round),
+                          playerController: controller))
+                ],
+              ),
+            )
+          : const Center(child: CircularProgressIndicator()),
+      const SizedBox(
+        height: 20,
+      ),
+    ]));
   }
 
   void _pauseOrPlay() async {
     if (_playing == true) {
       setState(() {
-        _playIcon = Icon(Icons.play_arrow);
+        _playIcon = const Icon(Icons.play_arrow);
         _playing = false;
       });
 
       await controller.pausePlayer();
     } else {
       setState(() {
-        _playIcon = Icon(Icons.pause_outlined);
+        _playIcon = const Icon(Icons.pause_outlined);
         _playing = true;
       });
       await controller.startPlayer(finishMode: FinishMode.pause);
       controller.onCompletion.listen((event) {
         setState(() {
-          _playIcon = Icon(Icons.replay_outlined);
+          _playIcon = const Icon(Icons.replay_outlined);
           _playing = false;
         });
       });

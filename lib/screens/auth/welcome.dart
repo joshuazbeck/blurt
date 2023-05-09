@@ -14,6 +14,7 @@ import '../templates/template_form.dart';
 class Welcome extends StatelessWidget {
   const Welcome({super.key});
 
+  /// ********** BUILD THE FORM *************
   @override
   Widget build(BuildContext context) {
     if (Shared.isLoggedIn() != null) {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// Generic template to handle layout and theming
 class TemplateForm extends StatefulWidget {
   TemplateForm(
       {super.key,
@@ -23,7 +24,7 @@ class _TemplateFormState extends State<TemplateForm> {
         child: Column(children: [
           Expanded(
               child: Padding(
-                  padding: EdgeInsets.fromLTRB(30, 5, 30, 5),
+                  padding: const EdgeInsets.fromLTRB(30, 5, 30, 5),
                   child: widget.child)),
           Visibility(
               visible: widget.bottomBarVisible,

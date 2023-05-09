@@ -1,12 +1,9 @@
 import 'enums.dart';
 import 'friend.dart';
 
-/**
- * Holds information for an individual blurt
- */
+/// Create a blurt boject
 class Blurt {
   final Friend friend;
-  //TODO: Currently linked to static local file
   final String audioPath;
   final String title;
   final double length;

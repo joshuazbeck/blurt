@@ -5,18 +5,20 @@ import 'package:firebase_core/firebase_core.dart';
 import '../models/enums.dart';
 import '../models/friend.dart';
 
+/// A service to handle friend managment actions
 class FriendService {
-  final _firebaseAuth = FirebaseAuth.instance;
-
+  /// Send a friend request from a username to a username
   Future<User?> sendFriendRequest(String username, String toUsername) async {
-    FirebaseFirestore _instance = FirebaseFirestore.instance;
+    // Get an instance of the database
+    FirebaseFirestore instance = FirebaseFirestore.instance;
 
+    // Get the user collection
     CollectionReference<Map<String, dynamic>> _userRef =
-        _instance.collection("users");
+        instance.collection("users");
 
-    String? bUID = null;
+    // Get the friends of the recieving user
+    String? bUID;
     Map<String, dynamic>? bExistingFriends = null;
-    //Add a reference on the new username that a friend request has been sent
     await _userRef.where('username', isEqualTo: toUsername).get().then((query) {
       if (query.docs.isNotEmpty) {
         DocumentSnapshot docSnapshot = query.docs.first;
@@ -26,7 +28,8 @@ class FriendService {
       }
     });
 
-    String? aUID = null;
+    // Get the friends of the sending user
+    String? aUID;
     Map<String, dynamic>? aExistingFriends = null;
     await _userRef.where('username', isEqualTo: username).get().then((query) {
       if (query.docs.isNotEmpty) {
@@ -37,6 +40,7 @@ class FriendService {
       }
     });
 
+    // Ensure both sending and recieving user
     if (bUID == null || aUID == null) {
       print(
           "sendFriendRequest(): Either the username or toUsername docuemnts did not exists");
@@ -44,12 +48,10 @@ class FriendService {
     } else {
       //Send a friend request
 
-      print(
-          "sendFriendRequest(): sending the friend requests from ${aUID} to ${bUID}");
-
       Map<String, List<dynamic>> aFriends = {};
       Map<String, List<dynamic>> bFriends = {};
 
+      // If there are no existing friends or requested friends
       if (aExistingFriends == null ||
           !aExistingFriends!.containsKey("requested")) {
         aFriends = {
@@ -61,6 +63,7 @@ class FriendService {
         };
       }
 
+      // If there are no existing friends or requests freinds
       if (bExistingFriends == null ||
           !bExistingFriends!.containsKey("requests")) {
         print(
@@ -74,25 +77,26 @@ class FriendService {
         };
       }
 
+      // Set the sending and recieiving user's friends
       await _userRef
           .doc(aUID)
           .set({'friends': aFriends}, SetOptions(merge: true));
-
       await _userRef
           .doc(bUID)
           .set({'friends': bFriends}, SetOptions(merge: true));
-      ;
     }
-    //Add a reference on the current username that a friend request was recieved
+    return null;
   }
 
+  /// Get available friends for a username
   Future<Iterable<Friend>> getFriends(String username) async {
-    FirebaseFirestore _instance = FirebaseFirestore.instance;
+    // Get an instance of the database
+    FirebaseFirestore instance = FirebaseFirestore.instance;
 
     Map<String, dynamic>? userFriends = {};
 
-    //Current user friends
-    await _instance
+    // Get the user object
+    await instance
         .collection('users')
         .where('username', isEqualTo: username)
         .get()
@@ -100,17 +104,21 @@ class FriendService {
       if (query.docs.isNotEmpty) {
         DocumentSnapshot docSnapshot = query.docs.first;
         var data = docSnapshot.data();
+        // Get the user's friends
         userFriends = (data as Map)['friends'];
       }
     });
+
+    // Get all users
     CollectionReference<Map<String, dynamic>> _userRef =
-        _instance.collection("users");
+        instance.collection("users");
 
     List<Friend> friends = [];
 
+    // If the user has all the necessary fields, add them to the list
     await _userRef.get().then((value) {
       value.docs.forEach((element) {
-        final data = element.data() as Map<String, dynamic>;
+        final data = element.data();
         if (element.exists) {
           if (data.containsKey('firstName') &&
               data.containsKey('lastName') &&
@@ -118,14 +126,17 @@ class FriendService {
             if (userFriends != null &&
                 userFriends!.containsKey('requested') &&
                 userFriends!['requested']!.contains(data['uid'])) {
+              // Add the friend with the appropriate status [REQUESTED]
               friends.add(Friend("http", data['firstName'], data['lastName'],
                   data['username'], FriendStatus.requested));
             } else if (userFriends != null &&
                 userFriends!.containsKey('requests') &&
                 userFriends!['requests']!.contains(data['uid'])) {
+              // Add the friend with the appropriate status [REQUESTS]
               friends.add(Friend("http", data['firstName'], data['lastName'],
                   data['username'], FriendStatus.pending));
             } else {
+              // Add the friend with the appropriate status [INACTIVE]
               friends.add(Friend("http", data['firstName'], data['lastName'],
                   data['username'], FriendStatus.inactive));
             }
@@ -133,7 +144,6 @@ class FriendService {
         }
       });
     });
-    // DocumentSnapshot doc = await _userRef.get();
     return friends;
   }
 }

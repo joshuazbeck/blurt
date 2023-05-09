@@ -8,6 +8,7 @@ import '../../models/enums.dart';
 import '../../models/friend.dart';
 import '../templates/template.dart';
 
+/// Friend managment page
 class ManageFriends extends StatefulWidget {
   const ManageFriends({super.key});
 
@@ -15,8 +16,11 @@ class ManageFriends extends StatefulWidget {
   State<ManageFriends> createState() => _ManageFriendsState();
 }
 
+/// Friend managment page
 class _ManageFriendsState extends State<ManageFriends> {
   var _i = 1;
+
+  /// Store the indexes of the different friend pages
   static const int _currentI = 0;
   static const int _addI = 1;
   static const int _requestsI = 2;
@@ -25,31 +29,34 @@ class _ManageFriendsState extends State<ManageFriends> {
   Widget build(BuildContext context) {
     return Template(
         bottomButton: ElevatedButton(
-          child: Text("done"),
           onPressed: () {
             Navigator.pop(context);
           },
           style: ButtonStyle(
               backgroundColor:
                   MaterialStateProperty.all(Theme.of(context).primaryColor)),
+          child: const Text("done"),
         ),
         child: Row(children: [
+          // Return the correct friend sub page
           Expanded(child: getFriendPage(_i)),
           Column(
             children: [
-              Spacer(),
+              const Spacer(),
               RotatedBox(
                   quarterTurns: 5,
                   child: Row(children: [
+                    // Hold links to the different pages
                     TextButton(
                       child: Text("CURRENT",
                           style: (_i == _currentI)
                               ? TextStyle(
                                   height: 1.5,
                                   shadows: [
+                                    //Hack to move the underlines away from the text
                                     Shadow(
                                         color: Theme.of(context).primaryColor,
-                                        offset: Offset(0, -3))
+                                        offset: const Offset(0, -3))
                                   ],
                                   color: Colors.transparent,
                                   decoration: TextDecoration.underline,
@@ -60,6 +67,7 @@ class _ManageFriendsState extends State<ManageFriends> {
                                   color: Theme.of(context).primaryColor,
                                 )),
                       onPressed: () {
+                        //Open the "CURRENT" friend page
                         _openCurrent();
                       },
                     ),
@@ -69,9 +77,10 @@ class _ManageFriendsState extends State<ManageFriends> {
                               ? TextStyle(
                                   height: 1.5,
                                   shadows: [
+                                    // Hack to move the underlines away from the text
                                     Shadow(
                                         color: Theme.of(context).primaryColor,
-                                        offset: Offset(0, -3))
+                                        offset: const Offset(0, -3))
                                   ],
                                   color: Colors.transparent,
                                   decoration: TextDecoration.underline,
@@ -90,10 +99,11 @@ class _ManageFriendsState extends State<ManageFriends> {
                           style: (_i == _requestsI)
                               ? TextStyle(
                                   height: 1.5,
+                                  // Hack to move the underlines away from the text
                                   shadows: [
                                     Shadow(
                                         color: Theme.of(context).primaryColor,
-                                        offset: Offset(0, -3))
+                                        offset: const Offset(0, -3))
                                   ],
                                   color: Colors.transparent,
                                   decoration: TextDecoration.underline,
@@ -108,7 +118,7 @@ class _ManageFriendsState extends State<ManageFriends> {
                       },
                     )
                   ])),
-              Spacer()
+              const Spacer()
             ],
           )
         ]));
@@ -132,18 +142,20 @@ class _ManageFriendsState extends State<ManageFriends> {
     });
   }
 
-  Widget getFriendPage(final int _i) {
-    switch (_i) {
+  /// Return the correct friend sub page
+  Widget getFriendPage(final int i) {
+    switch (i) {
       case _addI:
-        return AddFriend();
+        return const AddFriend();
       case _currentI:
-        return CurrentFriend();
+        return const CurrentFriend();
       default:
-        return RequestFriend();
+        return const RequestFriend();
     }
   }
 }
 
+/// Add a friend page
 class AddFriend extends StatefulWidget {
   const AddFriend({super.key});
 
@@ -156,7 +168,7 @@ class _AddFriendState extends State<AddFriend> {
   String? username;
   @override
   void initState() {
-    WidgetsBinding.instance!.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       getContacts();
       setState(() {});
     });
@@ -181,8 +193,13 @@ class _AddFriendState extends State<AddFriend> {
     //page, so we can just retrieve it
     final Iterable<Contact> contacts = await ContactsService.getContacts();
     if (contacts.isNotEmpty) {
+      // Initialize the API
       API api = API();
-      AuthService authService = new AuthService();
+
+      // Initialize the authentication service
+      AuthService authService = AuthService();
+
+      // Get the user
       authService.getAuthenticatedUser().then((value) {
         if (value != null && value.username != null) {
           api.getFriendsMatchingContact(value.username!).then((value) {
@@ -202,6 +219,7 @@ class _AddFriendState extends State<AddFriend> {
     }
   }
 
+  /// ************ BUILD THE WIDGET *********
   @override
   Widget build(BuildContext context) {
     return Column(children: [
@@ -211,7 +229,7 @@ class _AddFriendState extends State<AddFriend> {
           // display name
           ? Flexible(
               child: Padding(
-                  padding: EdgeInsets.all(30),
+                  padding: const EdgeInsets.all(30),
                   //TODO: Integrate a search bar
                   child: ListView.builder(
                     itemCount: _contacts?.length ?? 0,
@@ -225,7 +243,7 @@ class _AddFriendState extends State<AddFriend> {
                           personalUsername: username!);
                     },
                   )))
-          : Center(child: CircularProgressIndicator())
+          : const Center(child: CircularProgressIndicator())
     ]);
     ;
   }
@@ -241,7 +259,7 @@ class CurrentFriend extends StatefulWidget {
 class _CurrentFriendState extends State<CurrentFriend> {
   @override
   Widget build(BuildContext context) {
-    return Container(child: Center(child: Text("CURRENT")));
+    return const Center(child: Text("CURRENT"));
   }
 }
 
@@ -255,16 +273,20 @@ class RequestFriend extends StatefulWidget {
 class _RequestFriendState extends State<RequestFriend> {
   @override
   Widget build(BuildContext context) {
-    return Container(child: Center(child: Text("REQUEST")));
+    return const Center(child: Text("REQUEST"));
   }
 }
 
+/// Build a friend row widget
 class FriendRow extends StatefulWidget {
+  // Hold the data for the widget
   final String personalUsername;
   final String imageUrl;
   final String name;
   final String username;
   final FriendStatus friendStatus;
+
+  // Friend constructor
   const FriendRow(
       {super.key,
       required this.imageUrl,
@@ -291,36 +313,37 @@ class _FriendRowState extends State<FriendRow> {
           radius: 25.0,
           backgroundImage: NetworkImage(widget.imageUrl),
         ),
-        Spacer(),
+        const Spacer(),
         Column(children: [
           Text(widget.name, style: Theme.of(context).textTheme.labelLarge),
-          SizedBox(
+          const SizedBox(
             height: 10,
           ),
           Text(widget.username, style: Theme.of(context).textTheme.bodySmall),
         ]),
-        Spacer(),
+        const Spacer(),
         SizedBox(
+            width: 100,
+            height: 40,
             child: ElevatedButton(
                 onPressed: () {
                   _manageFriend();
                 },
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).primaryColor),
                 child: Text(_friendText(),
                     style: Theme.of(context)
                         .textTheme
                         .bodySmall
-                        ?.copyWith(color: Colors.white)),
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).primaryColor)),
-            width: 100,
-            height: 40)
+                        ?.copyWith(color: Colors.white))))
       ]),
-      SizedBox(
+      const SizedBox(
         height: 20,
       ),
     ]);
   }
 
+  /// Get the appropriate friend text
   String _friendText() {
     if (widget.friendStatus == FriendStatus.inactive) {
       return 'add';
@@ -335,10 +358,11 @@ class _FriendRowState extends State<FriendRow> {
     }
   }
 
+  /// Send friend requests
   void _manageFriend() {
     if (widget.friendStatus == FriendStatus.inactive) {
       //Send a friend
-      FriendService fs = new FriendService();
+      FriendService fs = FriendService();
 
       fs.sendFriendRequest(widget.personalUsername, widget.username);
     } else if (widget.friendStatus == FriendStatus.active) {

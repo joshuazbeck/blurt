@@ -10,6 +10,7 @@ import '../../main.dart';
 import '../main/dashboard.dart';
 import '../templates/template.dart';
 
+/// Widget to add a title to a new recorded blurt
 class RecordTitle extends StatefulWidget {
   const RecordTitle({super.key});
 
@@ -25,20 +26,19 @@ class _RecordTitleState extends State<RecordTitle> {
     initPlayer();
   }
 
+  // Hold the form identifier
   final _formKey = GlobalKey<FormState>();
 
-  Icon _playIcon = Icon(Icons.play_arrow);
+  // Hold the icon for the record button
+  Icon _playIcon = const Icon(Icons.play_arrow);
   bool _playing = false;
   bool _isLoading = true;
-  bool _widgetDisposed = false;
+
+  /// Controller for holding the player
   PlayerController controller = PlayerController();
 
   Future<void> initPlayer() async {
-    // Directory appDocDir = await getApplicationDocumentsDirectory();
-    // String appDocPath = appDocDir.path;
-    // print(appDocPath);
-
-    // String path = appDocPath + '/PinkPanther60.wav';
+    // Create a temporary directory to store the recorded file
     Directory tempDir = await getTemporaryDirectory();
     String path = '${tempDir.path}/temp_audio.wav';
 
@@ -47,9 +47,7 @@ class _RecordTitleState extends State<RecordTitle> {
     File file = File(path);
     file.writeAsBytesSync(response.bodyBytes);
 
-    // Directory externalDir = await getExternalStorageDirectory();
-    // String dirPath = externalDir.path;
-
+    // Prepare the recorder controller
     await controller.preparePlayer(
       path: path,
       shouldExtractWaveform: true,
@@ -63,14 +61,17 @@ class _RecordTitleState extends State<RecordTitle> {
   }
 
   @override
-  void dispose() {
-    _widgetDisposed = true;
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return TemplateForm(
+      bottomButton: IconButton(
+        icon: const Icon(Icons.check),
+        onPressed: () {
+          _returnToDashboard(context);
+        },
+        color: Colors.white,
+        iconSize: 40,
+      ),
+      formKey: _formKey,
       child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -83,9 +84,13 @@ class _RecordTitleState extends State<RecordTitle> {
                 return null;
               },
             ),
-            SizedBox(height: 40),
+            const SizedBox(height: 40),
             (!_isLoading)
                 ? Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20.0),
+                      color: Theme.of(context).primaryColor,
+                    ),
                     child: Row(
                       children: [
                         IconButton(
@@ -95,7 +100,7 @@ class _RecordTitleState extends State<RecordTitle> {
                             onPressed: _pauseOrPlay),
                         Expanded(
                             child: AudioFileWaveforms(
-                                size: Size(100.0, 70.0),
+                                size: const Size(100.0, 70.0),
                                 enableSeekGesture: true,
                                 playerWaveStyle: const PlayerWaveStyle(
                                     liveWaveColor: Colors.white,
@@ -108,42 +113,33 @@ class _RecordTitleState extends State<RecordTitle> {
                                 playerController: controller))
                       ],
                     ),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20.0),
-                      color: Theme.of(context).primaryColor,
-                    ),
                   )
-                : Center(child: CircularProgressIndicator()),
+                : const Center(child: CircularProgressIndicator()),
           ]),
-      bottomButton: IconButton(
-        icon: Icon(Icons.check),
-        onPressed: () {
-          _returnToDashboard(context);
-        },
-        color: Colors.white,
-        iconSize: 40,
-      ),
-      formKey: _formKey,
     );
   }
 
+  /// Pause or play the audio
   void _pauseOrPlay() async {
+    // Pause the recording
     if (_playing == true) {
       setState(() {
-        _playIcon = Icon(Icons.play_arrow);
+        _playIcon = const Icon(Icons.play_arrow);
         _playing = false;
       });
 
       await controller.pausePlayer();
     } else {
+      // Start recording
       setState(() {
-        _playIcon = Icon(Icons.pause_outlined);
+        _playIcon = const Icon(Icons.pause_outlined);
         _playing = true;
       });
       await controller.startPlayer(finishMode: FinishMode.pause);
       controller.onCompletion.listen((event) {
+        // At the end of the recording, show the replay button
         setState(() {
-          _playIcon = Icon(Icons.replay_outlined);
+          _playIcon = const Icon(Icons.replay_outlined);
           _playing = false;
         });
       });
@@ -152,8 +148,7 @@ class _RecordTitleState extends State<RecordTitle> {
 
   void _returnToDashboard(BuildContext context) async {
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => Main(page: Dashboard())),
-      // (Route<dynamic> route) => false,
+      MaterialPageRoute(builder: (context) => Main(page: const Dashboard())),
     );
   }
 }

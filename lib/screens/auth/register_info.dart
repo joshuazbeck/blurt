@@ -28,6 +28,7 @@ class _RegisterInfoState extends State<RegisterInfo> {
 class RegisterPersonalForm extends StatefulWidget {
   const RegisterPersonalForm({super.key});
 
+  //Store the static keys for tests
   static const usernameKey = Key("username");
   static const firstNameKey = Key("firstName");
   static const lastNameKey = Key("lastName");
@@ -41,15 +42,19 @@ class RegisterPersonalForm extends StatefulWidget {
 
 class _RegisterPersonalFormState extends State<RegisterPersonalForm> {
   final _formKey = GlobalKey<FormState>();
+
+  //Hold the values for the form
   String? _firstName;
   String? _lastName;
   String? _phoneNumber;
   String? _username;
   DateTime? _date;
 
+  // Hold the value for whether the privacy policy is checked
   bool _checked = false;
 
-  InputDecoration _usernameDecorator = InputDecoration(
+  /*********** INPUT DECORATORS **********/
+  final InputDecoration _usernameDecorator = InputDecoration(
     hintText: "enter username",
     filled: true,
     fillColor: Colors.grey[200],
@@ -58,7 +63,7 @@ class _RegisterPersonalFormState extends State<RegisterPersonalForm> {
       borderSide: BorderSide.none,
     ),
   );
-  InputDecoration _firstNameDecorator = InputDecoration(
+  final InputDecoration _firstNameDecorator = InputDecoration(
     hintText: "enter first name",
     filled: true,
     fillColor: Colors.grey[200],
@@ -67,7 +72,7 @@ class _RegisterPersonalFormState extends State<RegisterPersonalForm> {
       borderSide: BorderSide.none,
     ),
   );
-  InputDecoration _lastNameDecorator = InputDecoration(
+  final InputDecoration _lastNameDecorator = InputDecoration(
     hintText: "enter last name",
     filled: true,
     fillColor: Colors.grey[200],
@@ -76,7 +81,7 @@ class _RegisterPersonalFormState extends State<RegisterPersonalForm> {
       borderSide: BorderSide.none,
     ),
   );
-  InputDecoration _phoneNumberDecorator = InputDecoration(
+  final InputDecoration _phoneNumberDecorator = InputDecoration(
     hintText: "enter phone number",
     filled: true,
     fillColor: Colors.grey[200],
@@ -85,30 +90,39 @@ class _RegisterPersonalFormState extends State<RegisterPersonalForm> {
       borderSide: BorderSide.none,
     ),
   );
-  InputDecoration _dateTimeDecorator = InputDecoration(
+  final InputDecoration _dateTimeDecorator = InputDecoration(
     hintText: "enter birthday",
     filled: true,
     fillColor: Colors.grey[200],
     border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: BorderSide(color: Colors.pink)),
+        borderSide: const BorderSide(color: Colors.pink)),
   );
+
+  /*********** BUILD THE FORM **********/
   @override
   Widget build(BuildContext context) {
     return TemplateForm(
       formKey: _formKey,
+      bottomButton: IconButton(
+        key: RegisterPersonalForm.addInfoBnt,
+        icon: Icon(Icons.check_rounded),
+        onPressed: _addInfo,
+        color: Colors.white,
+        iconSize: 40,
+      ),
       child: Column(children: <Widget>[
-        Container(
+        SizedBox(
             height: 200,
             child: Column(children: [
-              Spacer(),
+              const Spacer(),
               Text("personal information",
                   style: Theme.of(context).textTheme.headlineSmall),
-              SizedBox(height: 17),
+              const SizedBox(height: 17),
               Text("we don’t sell this stuff",
                   style: Theme.of(context).textTheme.labelLarge)
             ])),
-        Spacer(flex: 1),
+        const Spacer(flex: 1),
         TextFormField(
           key: RegisterPersonalForm.usernameKey,
           style: TextStyle(
@@ -124,7 +138,7 @@ class _RegisterPersonalFormState extends State<RegisterPersonalForm> {
             return null;
           },
         ),
-        SizedBox(height: 20),
+        const SizedBox(height: 20),
         TextFormField(
           key: RegisterPersonalForm.firstNameKey,
           style: TextStyle(
@@ -140,7 +154,7 @@ class _RegisterPersonalFormState extends State<RegisterPersonalForm> {
             return null;
           },
         ),
-        SizedBox(height: 20),
+        const SizedBox(height: 20),
         TextFormField(
           key: RegisterPersonalForm.lastNameKey,
           style: TextStyle(
@@ -156,7 +170,7 @@ class _RegisterPersonalFormState extends State<RegisterPersonalForm> {
             return null;
           },
         ),
-        SizedBox(height: 20),
+        const SizedBox(height: 20),
         TextFormField(
           key: RegisterPersonalForm.phoneNumKey,
           inputFormatters: [
@@ -177,7 +191,7 @@ class _RegisterPersonalFormState extends State<RegisterPersonalForm> {
             return null;
           },
         ),
-        SizedBox(height: 20),
+        const SizedBox(height: 20),
         DateTimeField(
           key: RegisterPersonalForm.bdayKey,
           style: TextStyle(
@@ -205,59 +219,65 @@ class _RegisterPersonalFormState extends State<RegisterPersonalForm> {
             return null;
           },
         ),
-        Spacer(flex: 2),
+        const Spacer(flex: 2),
         CheckboxFormField(
           value: _checked,
           context: context,
         ),
       ]),
-      bottomButton: IconButton(
-        key: RegisterPersonalForm.addInfoBnt,
-        icon: Icon(Icons.check_rounded),
-        onPressed: _addInfo,
-        color: Colors.white,
-        iconSize: 40,
-      ),
     );
   }
 
+  /*********** BUTTON METHODS **********/
+
+  ///Open the dashboard
   void _openDashboard() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => Main(page: Dashboard())),
+      MaterialPageRoute(builder: (context) => Main(page: const Dashboard())),
     );
   }
 
+  /// Submit the form and add the additional information to the authenticated user
   void _addInfo() {
+    // Get the logged in user
     final FirebaseAuth auth = FirebaseAuth.instance;
     final User? user = auth.currentUser;
     AuthService _auth = AuthService();
+
     if (user == null) {
       //TODO: redirect to the login
     } else {
+      // If the form is valid
       if (_formKey.currentState?.validate() ?? false) {
         if (_firstName == null ||
             _lastName == null ||
             _phoneNumber == null ||
             _date == null ||
             _username == null) {
+          // Catch the empty fields
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Some fields are empty')),
           );
 
           return;
         }
+        // Add the additional information
         _auth.addFullUser(user, _username!, _firstName!, _lastName!,
             _phoneNumber!, _date.toString());
+
+        // Open the dashboard feed
         _openDashboard();
       }
     }
   }
 }
 
+//A custom checkbox form field
 class CheckboxFormField extends FormField<bool> {
   CheckboxFormField(
-      {FormFieldValidator<bool>? validator,
+      {super.key,
+      FormFieldValidator<bool>? validator,
       bool value = false,
       bool autovalidate = false,
       ValueChanged<bool>? onChanged,
@@ -279,7 +299,6 @@ class CheckboxFormField extends FormField<bool> {
                           style: Theme.of(context).textTheme.labelSmall))
                 ],
               ),
-//display error in matching theme
               Text(
                 state.errorText ?? '',
                 style: TextStyle(
@@ -291,6 +310,7 @@ class CheckboxFormField extends FormField<bool> {
         });
 }
 
+// Based off an online source to format a phone number
 class MaskedTextInputFormatter extends TextInputFormatter {
   final String mask;
 

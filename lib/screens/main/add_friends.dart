@@ -20,23 +20,32 @@ class _FriendsAddState extends State<FriendsAdd> {
   @override
   void initState() {
     WidgetsBinding.instance!.addPostFrameCallback((_) {
+      //Initialize the authentication service
       AuthService authService = new AuthService();
       authService.getAuthenticatedUser().then((value) {
         if (value != null && value.username != null) {
+          //Get the contacts if the user is logged in
           getContacts(value.username!);
         }
       });
 
+      //Refresh state
       setState(() {});
     });
+
+    //Call the parent method
     super.initState();
   }
 
+  /// Get the contacts
   Future<void> getContacts(String username) async {
     //Make sure we already have permissions for contacts when we get to this
     //page, so we can just retrieve it
     final Iterable<Contact> contacts = await ContactsService.getContacts();
+
+    // If contacts exist
     if (contacts.isNotEmpty) {
+      // Get available friends from the database based on contacts
       API api = API();
       api.getFriendsMatchingContact(username).then((value) {
         setState(() {
@@ -44,6 +53,7 @@ class _FriendsAddState extends State<FriendsAdd> {
         });
       });
     } else {
+      // If there are no contacts, most likely this is a permission issue requiring settings remedy
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
             duration: Duration(seconds: 4),
@@ -53,6 +63,7 @@ class _FriendsAddState extends State<FriendsAdd> {
     }
   }
 
+  /// *********** BUILD THE FORM *************
   @override
   Widget build(BuildContext context) {
     return Column(children: [
@@ -62,7 +73,7 @@ class _FriendsAddState extends State<FriendsAdd> {
           // display name
           ? Flexible(
               child: ListView.builder(
-              itemCount: _contacts?.length ?? 0,
+              itemCount: _contacts.length,
               itemBuilder: (BuildContext context, int index) {
                 Friend friends = _contacts.elementAt(index);
                 return FriendRow(
@@ -72,12 +83,13 @@ class _FriendsAddState extends State<FriendsAdd> {
                     friendStatus: friends.friendStatus);
               },
             ))
-          : Center(child: const ImportContacts())
+          : const Center(child: ImportContacts())
     ]);
     ;
   }
 }
 
+/// The import contacts button and business logic
 class ImportContacts extends StatefulWidget {
   const ImportContacts({super.key});
 
@@ -96,9 +108,10 @@ class _ImportContactsState extends State<ImportContacts> {
             _importingContacts();
           }
         },
-        child: Container(child: Text("Import Contacts")));
+        child: const Text("Import Contacts"));
   }
 
+  /// Show a message that contacts are importing
   void _importingContacts() async {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -106,12 +119,14 @@ class _ImportContactsState extends State<ImportContacts> {
     );
   }
 
-//Check contacts permission
+  /// Check contacts permission
   Future<PermissionStatus> _getPermission() async {
     final PermissionStatus permission = await Permission.contacts.status;
 
+    //If the contacts permission is not granted or denied
     if (permission != PermissionStatus.granted &&
         permission != PermissionStatus.denied) {
+      //Ask for contacts permission
       final Map<Permission, PermissionStatus> permissionStatus =
           await [Permission.contacts].request();
       await ContactsService.getContacts();
@@ -122,6 +137,7 @@ class _ImportContactsState extends State<ImportContacts> {
   }
 }
 
+/// A widget to store the firend information
 class FriendRow extends StatefulWidget {
   final String imageUrl;
   final String name;
@@ -151,12 +167,12 @@ class _FriendRowState extends State<FriendRow> {
         radius: 50.0,
         backgroundImage: NetworkImage(widget.imageUrl),
       ),
-      Spacer(),
+      const Spacer(),
       Column(children: [
         Text(widget.name),
         Text(widget.username),
       ]),
-      Spacer(),
+      const Spacer(),
       ElevatedButton(
           onPressed: () {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -166,8 +182,8 @@ class _FriendRowState extends State<FriendRow> {
             );
           },
           child: (widget.friendStatus == FriendStatus.inactive)
-              ? Text('Add Friend')
-              : Text('Remove Friend'))
+              ? const Text('Add Friend')
+              : const Text('Remove Friend'))
     ]);
   }
 }

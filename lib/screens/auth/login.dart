@@ -27,6 +27,7 @@ class _LoginState extends State<Login> {
 class LoginForm extends StatefulWidget {
   const LoginForm({super.key});
 
+  //Store the static keys for tests
   static const emailFieldKey = Key("email");
   static const passwordFieldKey = Key("password");
   static const loginBntKey = Key("login");
@@ -38,10 +39,13 @@ class LoginForm extends StatefulWidget {
 class _LoginFormState extends State<LoginForm> {
   final _formKey = GlobalKey<FormState>();
 
+  //Hold the values for the form
   String _email = "";
   String _password = "";
   String _confirmPassword = "";
-  InputDecoration _emailDecorator = InputDecoration(
+
+  /*********** INPUT DECORATORS **********/
+  final InputDecoration _emailDecorator = InputDecoration(
     hintText: "enter email",
     filled: true,
     fillColor: Colors.grey[200],
@@ -50,7 +54,7 @@ class _LoginFormState extends State<LoginForm> {
       borderSide: BorderSide.none,
     ),
   );
-  InputDecoration _passwordDecorator = InputDecoration(
+  final InputDecoration _passwordDecorator = InputDecoration(
     hintText: "enter password",
     filled: true,
     fillColor: Colors.grey[200],
@@ -59,12 +63,21 @@ class _LoginFormState extends State<LoginForm> {
       borderSide: BorderSide.none,
     ),
   );
+
+  /*********** BUILD THE FORM **********/
   @override
   Widget build(BuildContext context) {
     return TemplateForm(
       formKey: _formKey,
+      bottomButton: IconButton(
+        key: LoginForm.loginBntKey,
+        icon: Icon(Icons.add),
+        onPressed: _submitForm,
+        color: Colors.white,
+        iconSize: 40,
+      ),
       child: Column(children: <Widget>[
-        Container(
+        SizedBox(
             height: 200,
             child: Column(children: [
               Spacer(),
@@ -73,7 +86,7 @@ class _LoginFormState extends State<LoginForm> {
               Text("we’re excited you’re back",
                   style: Theme.of(context).textTheme.labelLarge),
             ])),
-        Spacer(
+        const Spacer(
           flex: 1,
         ),
         TextFormField(
@@ -90,7 +103,7 @@ class _LoginFormState extends State<LoginForm> {
             return null;
           },
         ),
-        SizedBox(height: 20),
+        const SizedBox(height: 20),
         TextFormField(
           key: LoginForm.passwordFieldKey,
           style: TextStyle(
@@ -106,7 +119,7 @@ class _LoginFormState extends State<LoginForm> {
             return null;
           },
         ),
-        Spacer(
+        const Spacer(
           flex: 2,
         ),
         TextButton(
@@ -114,16 +127,12 @@ class _LoginFormState extends State<LoginForm> {
             child: Text("i need to create an account",
                 style: Theme.of(context).textTheme.labelSmall))
       ]),
-      bottomButton: IconButton(
-        key: LoginForm.loginBntKey,
-        icon: Icon(Icons.add),
-        onPressed: _submitForm,
-        color: Colors.white,
-        iconSize: 40,
-      ),
     );
   }
 
+/*********** HANDLE BUTTON EVENTS **********/
+
+  /// Open the registeration page
   void _openRegister() {
     Navigator.pushReplacement(
       context,
@@ -131,17 +140,27 @@ class _LoginFormState extends State<LoginForm> {
     );
   }
 
+  /// Attempt to login
   void _submitForm() async {
+    //Check that the form is validated
     if (_formKey.currentState?.validate() ?? false) {
+      //Create a new instance of the authentication service
       AuthService _auth = AuthService();
+
+      //Attempt to login the user
       User? _user = await _auth.signInWithEmailAndPassword(_email, _password);
       if (_user != null) {
+        //Save the user to the user defaults
         Shared.saveLogin(_email, _password);
+
+        //Open the dashboard feed
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => Main(page: Dashboard())),
+          MaterialPageRoute(
+              builder: (context) => Main(page: const Dashboard())),
         );
       } else {
+        //If the context is still mounted, show a login failure
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Login failed')),

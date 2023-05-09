@@ -38,14 +38,17 @@ class RegisterForm extends StatefulWidget {
 class _RegisterFormState extends State<RegisterForm> {
   final _formKey = GlobalKey<FormState>();
 
+  // Stores the error messages
   String _emailError = "";
   String _passwordError = "";
 
+  // Hold the field values
   String _email = "";
   String _password = "";
   String _confirmPassword = "";
 
-  InputDecoration _emailDecorator = InputDecoration(
+  /*********** DECORATORS ***********/
+  final InputDecoration _emailDecorator = InputDecoration(
     hintText: "enter email",
     filled: true,
     fillColor: Colors.grey[200],
@@ -55,7 +58,7 @@ class _RegisterFormState extends State<RegisterForm> {
     ),
   );
 
-  InputDecoration _passwordDecorator = InputDecoration(
+  final InputDecoration _passwordDecorator = InputDecoration(
     hintText: "enter password",
     filled: true,
     fillColor: Colors.grey[200],
@@ -65,7 +68,7 @@ class _RegisterFormState extends State<RegisterForm> {
     ),
   );
 
-  InputDecoration _confirmPasswordDecorator = InputDecoration(
+  final InputDecoration _confirmPasswordDecorator = InputDecoration(
     hintText: "(re)enter password",
     filled: true,
     fillColor: Colors.grey[200],
@@ -78,11 +81,20 @@ class _RegisterFormState extends State<RegisterForm> {
   Widget build(BuildContext context) {
     return TemplateForm(
       formKey: _formKey,
+      bottomButton: Container(
+        child: IconButton(
+          key: RegisterForm.registerBntKey,
+          icon: const Icon(Icons.arrow_forward_ios),
+          onPressed: _registerUser,
+          color: Colors.white,
+        ),
+        // iconSize: 40,
+      ),
       child: Column(children: <Widget>[
         Container(
             height: 200,
             child: Column(children: [
-              Spacer(),
+              const Spacer(),
               RichText(
                   text: TextSpan(
                       text: 'share your first',
@@ -92,11 +104,11 @@ class _RegisterFormState extends State<RegisterForm> {
                         text: ' blurt',
                         style: TextStyle(color: Theme.of(context).primaryColor))
                   ])),
-              SizedBox(height: 17),
+              const SizedBox(height: 17),
               Text("create an account to start",
                   style: Theme.of(context).textTheme.labelLarge),
             ])),
-        Spacer(
+        const Spacer(
           flex: 1,
         ),
         TextFormField(
@@ -124,7 +136,7 @@ class _RegisterFormState extends State<RegisterForm> {
             return null;
           },
         ),
-        SizedBox(height: 20),
+        const SizedBox(height: 20),
         TextFormField(
           obscureText: true,
           key: RegisterForm.passwordFieldKey,
@@ -140,7 +152,7 @@ class _RegisterFormState extends State<RegisterForm> {
             return null;
           },
         ),
-        SizedBox(height: 20),
+        const SizedBox(height: 20),
         TextFormField(
           obscureText: true,
           key: RegisterForm.passwordConfirmFieldKey,
@@ -164,7 +176,7 @@ class _RegisterFormState extends State<RegisterForm> {
             return null;
           },
         ),
-        Spacer(
+        const Spacer(
           flex: 2,
         ),
         TextButton(
@@ -172,17 +184,10 @@ class _RegisterFormState extends State<RegisterForm> {
             child: Text("i already have an account",
                 style: Theme.of(context).textTheme.labelSmall))
       ]),
-      bottomButton: Container(
-        child: IconButton(
-          key: RegisterForm.registerBntKey,
-          icon: Icon(Icons.arrow_forward_ios),
-          onPressed: _registerUser,
-          color: Colors.white,
-        ),
-        // iconSize: 40,
-      ),
     );
   }
+
+  /// ********* FUNCTIONS **********
 
   void _openLogin() {
     Navigator.pushReplacement(
@@ -201,7 +206,7 @@ class _RegisterFormState extends State<RegisterForm> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-              builder: (context) => MainAuth(page: RegisterInfo())),
+              builder: (context) => const MainAuth(page: RegisterInfo())),
         );
       } on FirebaseAuthException catch (e) {
         if (e.code == 'weak-password') {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// Generic template to handle layout and theming
 class Template extends StatefulWidget {
   Template(
       {super.key,

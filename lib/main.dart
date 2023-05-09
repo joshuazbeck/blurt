@@ -10,26 +10,27 @@ import 'package:blurt/services/shared.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:audio_waveforms/audio_waveforms.dart';
-import 'package:flutterfire_ui/auth.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'assets/style/theme.dart';
 import 'firebase_options.dart';
+import 'models/enums.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Initialize the firebase app
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
+  // Start the app
   runApp(MaterialApp(
       title: 'Blurt',
       theme: BlurtTheme().primary,
       home: const RoutingController()));
 }
 
+/// A controller to handle routing to different widgets based off of the authentication state
 class RoutingController extends StatefulWidget {
   const RoutingController({super.key});
 
@@ -41,11 +42,14 @@ class _RoutingControllerState extends State<RoutingController> {
   AuthenticationState _authState = AuthenticationState.loading;
 
   Future _build() async {
+    // Check if the user is logged in based off of the shared credentials
     User? _user = await Shared.isLoggedIn();
-    print(_user);
+
     if (_user != null) {
+      // Create an instance of the authentication service
       AuthService authService = AuthService();
 
+      // Check if the full user information is available
       if (await authService.getFullUser(_user) != null) {
         _authState = AuthenticationState.authenticated;
         return;
@@ -59,6 +63,7 @@ class _RoutingControllerState extends State<RoutingController> {
     }
   }
 
+  /// *********** BUILD THE WIDGET *********
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
@@ -70,13 +75,14 @@ class _RoutingControllerState extends State<RoutingController> {
           } else if (_authState == AuthenticationState.authenticated) {
             return Main(page: const Dashboard());
           } else {
-            return const MainAuth(page: const RegisterInfo());
+            return const MainAuth(page: RegisterInfo());
           }
         },
         future: _build());
   }
 }
 
+/// An instance of the main widget to handle styling
 class Main extends StatelessWidget {
   final StatefulWidget page;
   String text = "blurt.";
@@ -92,16 +98,16 @@ class Main extends StatelessWidget {
                 onTap: () {
                   _openProfile(context);
                 },
-                child: CircleAvatar(
+                child: const CircleAvatar(
                   backgroundImage: NetworkImage('https://picsum.photos/200'),
                   radius: 20,
                 ),
               ),
-              Spacer(),
+              const Spacer(),
               Text(this.text),
-              Spacer(),
+              const Spacer(),
               IconButton(
-                icon: Icon(Icons.person),
+                icon: const Icon(Icons.person),
                 onPressed: () {
                   _manageFriends(context);
                 },
@@ -111,11 +117,12 @@ class Main extends StatelessWidget {
         body: page);
   }
 
+  /// Open the user profile
   void _openProfile(BuildContext context) async {
     Navigator.of(context).push(
       MaterialPageRoute(
           builder: (context) =>
-              MainSecondary(page: Profile(), text: "profile.")),
+              MainSecondary(page: const Profile(), text: "profile.")),
     );
   }
 
@@ -125,16 +132,18 @@ class Main extends StatelessWidget {
     Navigator.of(context).push(
       MaterialPageRoute(
           builder: (context) =>
-              MainSecondary(page: ManageFriends(), text: "friends.")),
+              MainSecondary(page: const ManageFriends(), text: "friends.")),
     );
   }
 }
 
+/// An instance of the main widget to handle styling (a custom styling)
 class MainSecondary extends StatelessWidget {
   final StatefulWidget page;
   String text = "blurt.";
   MainSecondary({super.key, required this.page, this.text = "blurt."});
 
+  /// ********** BUILD THE WIDGET *********
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -143,18 +152,20 @@ class MainSecondary extends StatelessWidget {
             automaticallyImplyLeading: false,
             backgroundColor: Theme.of(context).primaryColor,
             title: Row(children: [
-              Spacer(),
+              const Spacer(),
               Text(this.text),
-              Spacer(),
+              const Spacer(),
             ])),
         body: page);
   }
 }
 
+/// Create a widget that is customized for authentication workflows
 class MainAuth extends StatelessWidget {
   final Widget page;
   const MainAuth({super.key, required this.page});
 
+  /// ********** BUILD THE WIDGET *********
   @override
   Widget build(BuildContext context) {
     return Scaffold(

@@ -5,21 +5,13 @@ import '../models/blurt.dart';
 import '../models/friend.dart';
 
 class API {
-  /**
-   * Get all available friends from contacts
-   * 
-   * TODO: Actually connect to API and look by contacts
-   */
+  /// Get all the friends
   Future<Iterable<Friend>> getFriendsMatchingContact(String username) async {
     FriendService friendService = FriendService();
     return friendService.getFriends(username);
   }
 
-  /**
-   * Get all the blurts available for the current user
-   * 
-   * TODO: Link to the API
-   */
+  /// Get all the available friends
   Future<Iterable<Blurt>> getBlurts(String username) async {
     FriendService friendService = FriendService();
     Iterable<Friend> friends = await friendService.getFriends(username);
@@ -37,24 +29,4 @@ class API {
 
     return blurts;
   }
-
-  // /**
-  //  * An internal method for getting friends
-  //  * */
-  // Future<Iterable<Friend>> _getFriends() async {
-  //   //Create hardcoded list of friends
-  //   String ranProfImg = "https://picsum.photos/200";
-  //   Friend f1 = new Friend(
-  //       ranProfImg, "Josh Beck", "@joshzbeck", FriendStatus.inactive);
-  //   Friend f2 = new Friend(
-  //       ranProfImg, "Joe Ewing", "@sillystring77", FriendStatus.inactive);
-  //   Friend f3 = new Friend(
-  //       ranProfImg, "Reagan Scott", "@reagan.scott.122", FriendStatus.inactive);
-  //   Friend f4 = new Friend(
-  //       ranProfImg, "Caden Bolk", "@caden.bolk", FriendStatus.inactive);
-  //   Friend f5 = new Friend(
-  //       ranProfImg, "Isabel Mendoza", "@isabelmendoza", FriendStatus.inactive);
-  //   Iterable<Friend> friends = [f1, f2, f3, f4, f5];
-  //   return friends;
-  // }
 }

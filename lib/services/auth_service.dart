@@ -5,34 +5,24 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 
-class FullUser {
-  String? uid;
-  String? email;
-  String? username;
-  String? firstName;
-  String? lastName;
-  String? phoneNumber;
-  String? birthDate;
-}
+import '../models/friend.dart';
 
-enum AuthenticationState {
-  unauthenticated,
-  authenticated,
-  loading,
-  missingInfo
-}
-
+/// Create a service to handle authentication actions
 class AuthService {
-  final _firebaseAuth = FirebaseAuth.instance;
-
+  /// Register a new user to Google Firebase
   Future<User?> registerNewUser(String email, String password) async {
+    // Create an instance of the authentication
     FirebaseAuth auth = FirebaseAuth.instance;
 
+    // Create a user credential with the email and password
     UserCredential userCredential = await auth.createUserWithEmailAndPassword(
       email: email,
       password: password,
     );
+
+    // Get a user after signing in
     User? user = userCredential.user;
+
     if (user != null) {
       //Save the user login
       Shared.saveLogin(email, password);
@@ -40,16 +30,24 @@ class AuthService {
     return user;
   }
 
+  /// Get the full user
   Future<FullUser?> getFullUser(User user) async {
-    FirebaseFirestore _instance = FirebaseFirestore.instance;
-    DocumentReference _userRef =
-        _instance.collection("users").doc(user.uid.toString());
+    // Create an instance of firebase firestore
+    FirebaseFirestore instance = FirebaseFirestore.instance;
+
+    // Create a reference to the user
+    DocumentReference userRef =
+        instance.collection("users").doc(user.uid.toString());
     FullUser fullUser = FullUser();
 
-    DocumentSnapshot doc = await _userRef.get();
+    // Get the user
+    DocumentSnapshot doc = await userRef.get();
     if (doc.data() == null) return null;
     final data = doc.data() as Map<String, dynamic>;
+
+    // If the user full information exists
     if (doc.exists) {
+      // Set the values
       if (data.containsKey('uid')) {
         fullUser.uid = data['uid'];
       }
@@ -78,8 +76,10 @@ class AuthService {
     }
   }
 
+  /// Add additional personal information to an existing user
   void addFullUser(User user, String username, String firstName,
       String lastName, String phoneNumber, String birthDate) {
+    // Create a user object to write to firebase
     var _userArr = <String, String>{
       "uid": user.uid,
       "email": user.email ?? "",
@@ -90,31 +90,41 @@ class AuthService {
       "birthDate": birthDate,
     };
 
+    // Create a instance of the user in the database
     FirebaseFirestore doc = FirebaseFirestore.instance;
     doc.collection("users").doc(user.uid.toString()).set(_userArr);
   }
 
+  /// Get the current authenticated full user
   Future<FullUser?> getAuthenticatedUser() async {
+    //Create an instance of the firebase authentication
     FirebaseAuth auth = FirebaseAuth.instance;
     User? currentUser = auth.currentUser;
+
     if (currentUser != null) {
+      // Get the full user if it exists
       return getFullUser(currentUser);
     } else {
       return null;
     }
   }
 
+  /// Sign out the authenticated user
   Future signOut() {
+    // Sign out the user
     FirebaseAuth auth = FirebaseAuth.instance;
     Shared.signOut();
 
     return auth.signOut();
   }
 
+  /// Sign in with email and password
   Future<User?> signInWithEmailAndPassword(
       String email, String password) async {
+    //Create an instance of the firebase authentication
     FirebaseAuth auth = FirebaseAuth.instance;
     try {
+      //Sign in the user with email and password
       UserCredential userCredential = await auth.signInWithEmailAndPassword(
         email: email,
         password: password,

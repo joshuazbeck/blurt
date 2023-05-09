@@ -1,8 +1,6 @@
 import 'enums.dart';
 
-/**
- * A model to hold references to a friend
- */
+/// Store a reference to a friend
 class Friend {
   final String imageUrl;
   final String firstname;
@@ -16,4 +14,15 @@ class Friend {
 
   Friend(this.imageUrl, this.firstname, this.lastname, this.username,
       this.friendStatus);
+}
+
+// Store a reference to the user with the full information
+class FullUser {
+  String? uid;
+  String? email;
+  String? username;
+  String? firstName;
+  String? lastName;
+  String? phoneNumber;
+  String? birthDate;
 }
