@@ -25,4 +25,5 @@ class FullUser {
   String? lastName;
   String? phoneNumber;
   String? birthDate;
+  FriendStatus? friendStatus;
 }

@@ -1,11 +1,11 @@
 import 'dart:ffi';
 
-import 'package:blurt/services/shared.dart';
+import 'package:blurt/controllers/shared.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 
-import '../models/friend.dart';
+import '../model/items/friend.dart';
 
 /// Create a service to handle authentication actions
 class AuthService {

@@ -1,11 +1,11 @@
-import 'package:blurt/services/auth_service.dart';
-import 'package:blurt/services/friend_service.dart';
+import 'package:blurt/controllers/auth_service.dart';
+import 'package:blurt/controllers/friend_service.dart';
 import 'package:contacts_service/contacts_service.dart';
 import 'package:flutter/material.dart';
 
-import '../../data/api.dart';
-import '../../models/enums.dart';
-import '../../models/friend.dart';
+import '../../model/api.dart';
+import '../../model/items/enums.dart';
+import '../../model/items/friend.dart';
 import '../templates/template.dart';
 
 /// Friend managment page
@@ -39,7 +39,17 @@ class _ManageFriendsState extends State<ManageFriends> {
         ),
         child: Row(children: [
           // Return the correct friend sub page
-          Expanded(child: getFriendPage(_i)),
+          Expanded(
+              child: FutureBuilder<Widget>(
+            future: getPage(_i),
+            builder: (BuildContext context, AsyncSnapshot<Widget> snapshot) {
+              if (snapshot.hasData) {
+                return snapshot.data!; // use the Widget returned by the Future
+              } else {
+                return CircularProgressIndicator(); // show a loading indicator until the Future completes
+              }
+            },
+          )),
           Column(
             children: [
               const Spacer(),
@@ -124,6 +134,62 @@ class _ManageFriendsState extends State<ManageFriends> {
         ]));
   }
 
+  Iterable<Friend>? contacts;
+  Future<Widget> getPage(_i) async {
+    // setState(() {});
+    print("TEST");
+    getContacts(_i).then((value) => {
+          print("GOT CONTACTS " + value.toString()),
+        });
+    contacts = await getContacts(_i);
+
+    if (contacts != null) {
+      return FriendPage(
+          i: _i, contacts: contacts!, updateFriendsParent: updateContacts);
+    } else {
+      //TODO: Loading
+      return Text("Loading");
+    }
+  }
+
+  void updateContacts() async {
+    this.contacts = await getContacts(_i);
+    setState(() {});
+  }
+
+  Future<Iterable<Friend>?> getContacts(int i) async {
+    //Make sure we already have permissions for contacts when we get to this
+    //page, so we can just retrieve it
+    final Iterable<Contact> contacts = await ContactsService.getContacts();
+    if (contacts.isNotEmpty) {
+      // Initialize the API
+      API api = API();
+
+      // Initialize the authentication service
+      AuthService authService = AuthService();
+
+      var value = await authService.getAuthenticatedUser();
+      // Get the user
+
+      if (value != null && value.username != null) {
+        if (i == _ManageFriendsState._addI) {
+          return await api.getPossibleFriends(value.username!);
+        } else if (i == _ManageFriendsState._currentI) {
+          return await api.getAcceptedFriends(value.username!);
+        } else {
+          return await api.getRequestedFriends(value.username!);
+        }
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            duration: Duration(seconds: 4),
+            content: Text(
+                'Please check the Settings app to allow access to contacts')),
+      );
+    }
+  }
+
   void _openAdd() {
     setState(() {
       _i = _addI;
@@ -141,90 +207,46 @@ class _ManageFriendsState extends State<ManageFriends> {
       _i = _requestsI;
     });
   }
-
-  /// Return the correct friend sub page
-  Widget getFriendPage(final int i) {
-    switch (i) {
-      case _addI:
-        return const AddFriend();
-      case _currentI:
-        return const CurrentFriend();
-      default:
-        return const RequestFriend();
-    }
-  }
 }
 
-/// Add a friend page
-class AddFriend extends StatefulWidget {
-  const AddFriend({super.key});
+class FriendPage extends StatefulWidget {
+  int i;
+  FriendPage(
+      {super.key,
+      required this.i,
+      required this.contacts,
+      required this.updateFriendsParent});
 
-  @override
-  State<AddFriend> createState() => _AddFriendState();
-}
-
-class _AddFriendState extends State<AddFriend> {
-  Iterable<Friend> _contacts = [];
+  final Function() updateFriendsParent;
+  Iterable<Friend> contacts = [];
   String? username;
+
   @override
-  void initState() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      getContacts();
-      setState(() {});
-    });
+  State<FriendPage> createState() => _FriendPageState();
+}
 
-    _initAsync();
-    super.initState();
-  }
-
+class _FriendPageState extends State<FriendPage> {
   Future<void> _initAsync() async {
     AuthService authServ = AuthService();
     FullUser? fullUser = await authServ.getAuthenticatedUser();
     if (fullUser != null && fullUser.username != null) {
-      username = fullUser.username!;
+      if (this.mounted) {
+        setState(() {
+          widget.username = fullUser.username;
+        });
+      }
     } else {
       print("There is no user defined for a protected page");
       throw Error();
     }
   }
 
-  Future<void> getContacts() async {
-    //Make sure we already have permissions for contacts when we get to this
-    //page, so we can just retrieve it
-    final Iterable<Contact> contacts = await ContactsService.getContacts();
-    if (contacts.isNotEmpty) {
-      // Initialize the API
-      API api = API();
-
-      // Initialize the authentication service
-      AuthService authService = AuthService();
-
-      // Get the user
-      authService.getAuthenticatedUser().then((value) {
-        if (value != null && value.username != null) {
-          api.getFriendsMatchingContact(value.username!).then((value) {
-            setState(() {
-              _contacts = value;
-            });
-          });
-        }
-      });
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            duration: Duration(seconds: 4),
-            content: Text(
-                'Please check the Settings app to allow access to contacts')),
-      );
-    }
-  }
-
-  /// ************ BUILD THE WIDGET *********
   @override
   Widget build(BuildContext context) {
+    _initAsync();
+
     return Column(children: [
-      Text("Friends", style: Theme.of(context).textTheme.headlineSmall),
-      _contacts != null
+      widget.contacts != null
           //Build a list view of all contacts, displaying their avatar and
           // display name
           ? Flexible(
@@ -232,18 +254,19 @@ class _AddFriendState extends State<AddFriend> {
                   padding: const EdgeInsets.all(30),
                   //TODO: Integrate a search bar
                   child: ListView.builder(
-                    itemCount: _contacts?.length ?? 0,
+                    itemCount: widget.contacts?.length ?? 0,
                     itemBuilder: (BuildContext context, int index) {
-                      Friend friends = _contacts.elementAt(index);
-                      return FriendRow(
-                          imageUrl: friends.imageUrl,
-                          name: friends.getName(),
-                          username: friends.username,
-                          friendStatus: friends.friendStatus,
-                          personalUsername: username!);
+                      Friend friend = widget.contacts.elementAt(index);
+                      return (widget.username != null)
+                          ? FriendRow(
+                              availableFriend: friend,
+                              personalUsername: widget.username!,
+                              updateFriendsParent: widget.updateFriendsParent,
+                            )
+                          : CircularProgressIndicator.adaptive();
                     },
                   )))
-          : const Center(child: CircularProgressIndicator())
+          : const Center(child: Text("No friends available.  Try adding some"))
     ]);
     ;
   }
@@ -281,19 +304,14 @@ class _RequestFriendState extends State<RequestFriend> {
 class FriendRow extends StatefulWidget {
   // Hold the data for the widget
   final String personalUsername;
-  final String imageUrl;
-  final String name;
-  final String username;
-  final FriendStatus friendStatus;
-
+  Friend? availableFriend;
+  final Function() updateFriendsParent;
   // Friend constructor
-  const FriendRow(
+  FriendRow(
       {super.key,
-      required this.imageUrl,
-      required this.name,
-      required this.username,
-      required this.friendStatus,
-      required this.personalUsername});
+      required this.personalUsername,
+      required this.availableFriend,
+      required this.updateFriendsParent});
 
   @override
   State<FriendRow> createState() => _FriendRowState();
@@ -307,51 +325,58 @@ class _FriendRowState extends State<FriendRow> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(children: [
-      Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-        CircleAvatar(
-          radius: 25.0,
-          backgroundImage: NetworkImage(widget.imageUrl),
-        ),
-        const Spacer(),
-        Column(children: [
-          Text(widget.name, style: Theme.of(context).textTheme.labelLarge),
-          const SizedBox(
-            height: 10,
-          ),
-          Text(widget.username, style: Theme.of(context).textTheme.bodySmall),
-        ]),
-        const Spacer(),
-        SizedBox(
-            width: 100,
-            height: 40,
-            child: ElevatedButton(
-                onPressed: () {
-                  _manageFriend();
-                },
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).primaryColor),
-                child: Text(_friendText(),
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.copyWith(color: Colors.white))))
-      ]),
-      const SizedBox(
-        height: 20,
-      ),
-    ]);
+    return (widget.availableFriend == null)
+        ? const Center(child: CircularProgressIndicator.adaptive())
+        : Column(children: [
+            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              CircleAvatar(
+                radius: 25.0,
+                backgroundImage: NetworkImage(widget.availableFriend!.imageUrl),
+              ),
+              const Spacer(),
+              Column(children: [
+                Text(widget.availableFriend!.getName(),
+                    style: Theme.of(context).textTheme.labelLarge),
+                const SizedBox(
+                  height: 10,
+                ),
+                Text(widget.availableFriend!.username,
+                    style: Theme.of(context).textTheme.bodySmall),
+              ]),
+              const Spacer(),
+              SizedBox(
+                  width: 100,
+                  height: 40,
+                  child: ElevatedButton(
+                      onPressed: () {
+                        _manageFriend();
+                      },
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(context).primaryColor),
+                      child: Text(_friendText(),
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(color: Colors.white))))
+            ]),
+            const SizedBox(
+              height: 20,
+            ),
+          ]);
   }
 
   /// Get the appropriate friend text
   String _friendText() {
-    if (widget.friendStatus == FriendStatus.inactive) {
+    if (widget.availableFriend == null) {
+      return 'loading...';
+    }
+    if (widget.availableFriend!.friendStatus == FriendStatus.inactive) {
       return 'add';
-    } else if (widget.friendStatus == FriendStatus.active) {
+    } else if (widget.availableFriend!.friendStatus == FriendStatus.active) {
       return 'remove';
-    } else if (widget.friendStatus == FriendStatus.pending) {
+    } else if (widget.availableFriend!.friendStatus == FriendStatus.pending) {
       return "accept";
-    } else if (widget.friendStatus == FriendStatus.requested) {
+    } else if (widget.availableFriend!.friendStatus == FriendStatus.requested) {
       return "pending";
     } else {
       return "accept";
@@ -359,18 +384,30 @@ class _FriendRowState extends State<FriendRow> {
   }
 
   /// Send friend requests
-  void _manageFriend() {
-    if (widget.friendStatus == FriendStatus.inactive) {
+  void _manageFriend() async {
+    if (widget.availableFriend == null) {
+      return;
+    }
+    FriendService fs = FriendService();
+    if (widget.availableFriend!.friendStatus == FriendStatus.inactive) {
       //Send a friend
-      FriendService fs = FriendService();
-
-      fs.sendFriendRequest(widget.personalUsername, widget.username);
-    } else if (widget.friendStatus == FriendStatus.active) {
+      await fs.sendFriendRequest(
+          widget.personalUsername, widget.availableFriend!.username);
+    } else if (widget.availableFriend!.friendStatus == FriendStatus.active) {
       //Remove a friend
-    } else if (widget.friendStatus == FriendStatus.pending) {
+      await fs.removeFriendRequest(
+          widget.personalUsername, widget.availableFriend!.username);
+    } else if (widget.availableFriend!.friendStatus == FriendStatus.pending) {
       //Display a pending alert
+      await fs.acceptFriendRequest(
+          widget.personalUsername, widget.availableFriend!.username);
     } else {
       //Accept a friend request
     }
+
+    Friend? f = await fs.getFriend(
+        widget.availableFriend!.username, widget.personalUsername);
+
+    widget.updateFriendsParent();
   }
 }

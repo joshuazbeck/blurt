@@ -4,15 +4,15 @@
 // utility in the flutter_test package. For example, you can send tap and scroll
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
-import 'package:blurt/screens/auth/register_info.dart';
+import 'package:blurt/view/auth/register_info.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core_platform_interface/firebase_core_platform_interface.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:blurt/firebase_options.dart';
-import 'package:blurt/screens/auth/login.dart';
-import 'package:blurt/screens/auth/register.dart';
-import 'package:blurt/screens/main/dashboard.dart';
+import 'package:blurt/view/auth/login.dart';
+import 'package:blurt/view/auth/register.dart';
+import 'package:blurt/view/main/dashboard.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';

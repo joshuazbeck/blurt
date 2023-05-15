@@ -1,8 +1,8 @@
-import 'package:blurt/screens/templates/template.dart';
+import 'package:blurt/view/templates/template.dart';
 import 'package:flutter/material.dart';
 
 import '../../main.dart';
-import '../../services/auth_service.dart';
+import '../../controllers/auth_service.dart';
 import '../auth/login.dart';
 
 /// Create a profile widget
@@ -24,11 +24,14 @@ class _ProfileState extends State<Profile> {
         style: ButtonStyle(
             backgroundColor:
                 MaterialStateProperty.all(Theme.of(context).primaryColor)),
-        child: const Text("done"),
+        child: const Text("back"),
       ),
       child: Center(
           child: ElevatedButton(
         child: const Text("Log out"),
+        style: ButtonStyle(
+            backgroundColor:
+                MaterialStateProperty.all(Theme.of(context).primaryColor)),
         onPressed: () {
           _logOut(context);
         },

@@ -6,7 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import '../../main.dart';
-import '../../services/auth_service.dart';
+import '../../controllers/auth_service.dart';
 import '../main/dashboard.dart';
 import '../templates/template_form.dart';
 

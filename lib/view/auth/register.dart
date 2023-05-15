@@ -1,10 +1,10 @@
-import 'package:blurt/screens/auth/login.dart';
+import 'package:blurt/view/auth/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../main.dart';
-import '../../services/auth_service.dart';
+import '../../controllers/auth_service.dart';
 import '../templates/template_form.dart';
 import 'register_info.dart';
 

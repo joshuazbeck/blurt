@@ -1,11 +1,12 @@
-import 'package:blurt/services/auth_service.dart';
+import 'package:blurt/controllers/auth_service.dart';
 import 'package:contacts_service/contacts_service.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-import '../../data/api.dart';
-import '../../models/enums.dart';
-import '../../models/friend.dart';
+import '../../model/api.dart';
+import '../../model/items/enums.dart';
+import '../../model/items/friend.dart';
+import '../../controllers/friend_service.dart';
 
 class FriendsAdd extends StatefulWidget {
   const FriendsAdd({super.key});
@@ -46,8 +47,8 @@ class _FriendsAddState extends State<FriendsAdd> {
     // If contacts exist
     if (contacts.isNotEmpty) {
       // Get available friends from the database based on contacts
-      API api = API();
-      api.getFriendsMatchingContact(username).then((value) {
+      FriendService friendService = FriendService();
+      friendService.getAvailableFriends(username).then((value) {
         setState(() {
           _contacts = value;
         });

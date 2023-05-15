@@ -1,7 +1,7 @@
-import 'package:blurt/screens/auth/register.dart';
-import 'package:blurt/screens/auth/register_info.dart';
-import 'package:blurt/services/auth_service.dart';
-import 'package:blurt/services/shared.dart';
+import 'package:blurt/view/auth/register.dart';
+import 'package:blurt/view/auth/register_info.dart';
+import 'package:blurt/controllers/auth_service.dart';
+import 'package:blurt/controllers/shared.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';

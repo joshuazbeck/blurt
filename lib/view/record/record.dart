@@ -1,5 +1,5 @@
 import 'package:audio_waveforms/audio_waveforms.dart';
-import 'package:blurt/screens/record/record_title.dart';
+import 'package:blurt/view/record/record_title.dart';
 import 'package:flutter/material.dart';
 
 import '../../main.dart';
@@ -41,12 +41,14 @@ class _RecordState extends State<Record> {
         recorderController.stop();
         _recorderLocked = true;
       }
-      setState(() {
-        // Set the text during the recording
-        _remainingDuration =
-            "${timeRemaining.toStringAsFixed(1)} sec remaining";
-        _elapsedDuration = "${seconds.toStringAsFixed(1)} sec";
-      });
+      if (mounted) {
+        setState(() {
+          // Set the text during the recording
+          _remainingDuration =
+              "${timeRemaining.toStringAsFixed(1)} sec remaining";
+          _elapsedDuration = "${seconds.toStringAsFixed(1)} sec";
+        });
+      }
     });
   }
 
@@ -120,7 +122,7 @@ class _RecordState extends State<Record> {
 
   /// Open the "Add Title" screen
   void _openTitle(BuildContext context) async {
-    Navigator.of(context).push(
+    Navigator.of(context).pushReplacement(
       MaterialPageRoute(
           builder: (context) => const MainAuth(page: RecordTitle())),
     );

@@ -1,16 +1,16 @@
 import 'dart:io';
 
 import 'package:audio_waveforms/audio_waveforms.dart';
-import 'package:blurt/screens/templates/template.dart';
-import 'package:blurt/services/auth_service.dart';
+import 'package:blurt/view/templates/template.dart';
+import 'package:blurt/controllers/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:http/http.dart' as http;
 
-import '../../data/api.dart';
+import '../../model/api.dart';
 import '../../main.dart';
-import '../../models/blurt.dart';
+import '../../model/items/blurt.dart';
 import 'dart:math';
 
 import '../record/record.dart';
@@ -32,6 +32,7 @@ class _DashboardState extends State<Dashboard> {
 
   /// Hold a list of blurts
   Iterable<Blurt> _blurts = [];
+  bool _hasFriends = true;
 
   /// Build a random number generator
   Random random = Random();
@@ -63,6 +64,12 @@ class _DashboardState extends State<Dashboard> {
       // If the user is logged in
       if (value != null && value.username != null) {
         // Get the blurts for the user
+        api.getAcceptedFriends(value.username!).then((value) => {
+              setState(() {
+                _hasFriends = false;
+                print("Has no friends");
+              })
+            });
         api.getBlurts(value.username!).then((value) {
           setState(() {
             _blurts = value;
@@ -90,29 +97,29 @@ class _DashboardState extends State<Dashboard> {
         color: Colors.white,
         iconSize: 40,
       ),
-      child: Row(children: [
-        Container(
-            width: 50,
-            child: SmoothPageIndicator(
-              controller: controller,
-              count: pages.length,
-              effect: const ExpandingDotsEffect(
-                dotHeight: 16,
-                dotWidth: 16,
-                activeDotColor: Colors.red,
-              ),
-              axisDirection: Axis.vertical,
-            )),
-        Expanded(
-            child: Padding(
-                padding: const EdgeInsets.all(30),
-                child: SingleChildScrollView(
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: <Widget>[
-                      const SizedBox(height: 16),
-                      (pages.isNotEmpty)
-                          ? SizedBox(
+      child: (_blurts.isNotEmpty)
+          ? Row(children: [
+              Container(
+                  width: 50,
+                  child: SmoothPageIndicator(
+                    controller: controller,
+                    count: pages.length,
+                    effect: const ExpandingDotsEffect(
+                      dotHeight: 16,
+                      dotWidth: 16,
+                      activeDotColor: Colors.red,
+                    ),
+                    axisDirection: Axis.vertical,
+                  )),
+              Expanded(
+                  child: Padding(
+                      padding: const EdgeInsets.all(30),
+                      child: SingleChildScrollView(
+                          child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: <Widget>[
+                            const SizedBox(height: 16),
+                            SizedBox(
                               height: 720,
                               child: PageView.builder(
                                 controller: controller,
@@ -126,17 +133,26 @@ class _DashboardState extends State<Dashboard> {
                                 scrollDirection: Axis.vertical,
                                 itemCount: pages.length,
                               ),
-                            )
-                          : const Center(child: CircularProgressIndicator()),
-                      IconButton(
-                          icon: const Icon(Icons.play_arrow),
-                          color: Colors.white,
-                          iconSize: 50,
-                          onPressed: () async {
-                            //TODO: Implement method
-                          }),
-                    ]))))
-      ]),
+                            ),
+                            IconButton(
+                                icon: const Icon(Icons.play_arrow),
+                                color: Colors.white,
+                                iconSize: 50,
+                                onPressed: () async {
+                                  //TODO: Implement method
+                                }),
+                          ]))))
+            ])
+          : Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                  Padding(
+                      padding: EdgeInsets.all(40),
+                      child: Text(
+                          "Fun Fact: Add a friend to start listening to blurts")),
+                  CircularProgressIndicator()
+                ]),
     );
   }
 

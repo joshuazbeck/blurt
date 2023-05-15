@@ -1,19 +1,19 @@
-import 'package:blurt/screens/auth/register_info.dart';
-import 'package:blurt/screens/auth/login.dart';
-import 'package:blurt/screens/auth/register.dart';
-import 'package:blurt/screens/auth/welcome.dart';
-import 'package:blurt/screens/main/dashboard.dart';
-import 'package:blurt/screens/main/manage_friends.dart';
-import 'package:blurt/screens/profile/profile.dart';
-import 'package:blurt/services/auth_service.dart';
-import 'package:blurt/services/shared.dart';
+import 'package:blurt/view/auth/register_info.dart';
+import 'package:blurt/view/auth/login.dart';
+import 'package:blurt/view/auth/register.dart';
+import 'package:blurt/view/auth/welcome.dart';
+import 'package:blurt/view/main/dashboard.dart';
+import 'package:blurt/view/main/manage_friends.dart';
+import 'package:blurt/view/profile/profile.dart';
+import 'package:blurt/controllers/auth_service.dart';
+import 'package:blurt/controllers/shared.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
 import 'assets/style/theme.dart';
 import 'firebase_options.dart';
-import 'models/enums.dart';
+import 'model/items/enums.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

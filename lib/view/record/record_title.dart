@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:audio_waveforms/audio_waveforms.dart';
-import 'package:blurt/screens/templates/template_form.dart';
+import 'package:blurt/view/templates/template_form.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:path_provider/path_provider.dart';
@@ -54,10 +54,11 @@ class _RecordTitleState extends State<RecordTitle> {
       noOfSamples: 30,
       volume: 1.0,
     );
-
-    setState(() {
-      _isLoading = false;
-    });
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -123,32 +124,38 @@ class _RecordTitleState extends State<RecordTitle> {
   void _pauseOrPlay() async {
     // Pause the recording
     if (_playing == true) {
-      setState(() {
-        _playIcon = const Icon(Icons.play_arrow);
-        _playing = false;
-      });
-
+      if (mounted) {
+        setState(() {
+          _playIcon = const Icon(Icons.play_arrow);
+          _playing = false;
+        });
+      }
       await controller.pausePlayer();
     } else {
       // Start recording
-      setState(() {
-        _playIcon = const Icon(Icons.pause_outlined);
-        _playing = true;
-      });
+      if (mounted) {
+        setState(() {
+          _playIcon = const Icon(Icons.pause_outlined);
+          _playing = true;
+        });
+      }
       await controller.startPlayer(finishMode: FinishMode.pause);
       controller.onCompletion.listen((event) {
         // At the end of the recording, show the replay button
-        setState(() {
-          _playIcon = const Icon(Icons.replay_outlined);
-          _playing = false;
-        });
+        if (mounted) {
+          setState(() {
+            _playIcon = const Icon(Icons.replay_outlined);
+            _playing = false;
+          });
+        }
       });
     }
   }
 
   void _returnToDashboard(BuildContext context) async {
-    Navigator.of(context).pushReplacement(
+    Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (context) => Main(page: const Dashboard())),
+      (Route<dynamic> route) => false,
     );
   }
 }
