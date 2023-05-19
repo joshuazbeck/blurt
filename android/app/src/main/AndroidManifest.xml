@@ -1,12 +1,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.blurt">
+     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+        <uses-permission android:name="android.permission.READ_CONTACTS"/>
+        <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
    <application
         android:label="blurt"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
-        <uses-permission android:name="android.permission.RECORD_AUDIO" />
-        <uses-permission android:name="android.permission.READ_CONTACTS"/>
-        <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
+       
         <activity
             android:name=".MainActivity"
             android:exported="true"

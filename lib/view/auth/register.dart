@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../assets/style/theme.dart';
 import '../../main.dart';
 import '../../controllers/auth_service.dart';
 import '../templates/template_form.dart';
@@ -86,7 +87,7 @@ class _RegisterFormState extends State<RegisterForm> {
           key: RegisterForm.registerBntKey,
           icon: const Icon(Icons.arrow_forward_ios),
           onPressed: _registerUser,
-          color: Colors.white,
+          color: BlurtTheme.white,
         ),
         // iconSize: 40,
       ),
@@ -105,8 +106,10 @@ class _RegisterFormState extends State<RegisterForm> {
                         style: TextStyle(color: Theme.of(context).primaryColor))
                   ])),
               const SizedBox(height: 17),
-              Text("create an account to start",
-                  style: Theme.of(context).textTheme.labelLarge),
+              Opacity(
+                  opacity: 0.5,
+                  child: Text("create an account to start",
+                      style: Theme.of(context).textTheme.labelLarge)),
             ])),
         const Spacer(
           flex: 1,
@@ -206,7 +209,7 @@ class _RegisterFormState extends State<RegisterForm> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-              builder: (context) => const MainAuth(page: RegisterInfo())),
+              builder: (context) => MainAuth(page: RegisterInfo())),
         );
       } on FirebaseAuthException catch (e) {
         if (e.code == 'weak-password') {

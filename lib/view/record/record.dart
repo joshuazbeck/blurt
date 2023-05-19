@@ -2,6 +2,7 @@ import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:blurt/view/record/record_title.dart';
 import 'package:flutter/material.dart';
 
+import '../../assets/style/theme.dart';
 import '../../main.dart';
 import '../templates/template.dart';
 
@@ -25,6 +26,7 @@ class _RecordState extends State<Record> {
   // Strings holding the elapsed and remaining duration
   String _elapsedDuration = "0.0 sec";
   String _remainingDuration = "0.0 sec";
+  double duration = 0.0;
 
   @override
   void initState() {
@@ -35,6 +37,7 @@ class _RecordState extends State<Record> {
     recorderController.record();
     recorderController.onCurrentDuration.listen((duration) {
       double seconds = duration.inMilliseconds / 1000;
+      this.duration = seconds;
       double timeRemaining =
           (_allowedDurationLength - (duration.inMilliseconds / 1000));
       if (seconds >= _allowedDurationLength) {
@@ -65,11 +68,11 @@ class _RecordState extends State<Record> {
   Widget build(BuildContext context) {
     return Template(
       bottomButton: IconButton(
-        icon: const Icon(Icons.fiber_manual_record),
+        icon: const Icon(Icons.stop),
         onPressed: () {
           _openTitle(context);
         },
-        color: Colors.white,
+        color: BlurtTheme.white,
         iconSize: 40,
       ),
       child: Center(
@@ -94,7 +97,7 @@ class _RecordState extends State<Record> {
                                   MediaQuery.of(context).size.width / 1.2, 50),
                               recorderController: recorderController,
                               waveStyle: const WaveStyle(
-                                waveColor: Colors.white,
+                                waveColor: BlurtTheme.white,
                                 extendWaveform: true,
                                 showMiddleLine: false,
                               ),
@@ -106,7 +109,7 @@ class _RecordState extends State<Record> {
                                 style: Theme.of(context)
                                     .textTheme
                                     .labelMedium
-                                    ?.copyWith(color: Colors.white))
+                                    ?.copyWith(color: BlurtTheme.white))
                           ])))),
               const SizedBox(
                 height: 20,
@@ -124,7 +127,10 @@ class _RecordState extends State<Record> {
   void _openTitle(BuildContext context) async {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-          builder: (context) => const MainAuth(page: RecordTitle())),
+          builder: (context) => MainAuth(
+                  page: RecordTitle(
+                length: this.duration,
+              ))),
     );
   }
 }

@@ -7,6 +7,7 @@ import '../model/items/friend.dart';
 
 /// A service to handle friend managment actions
 class FriendService {
+  //TODO: Add any existing blurt
   Future<User?> acceptFriendRequest(String username, String toUsername) async {
     // Get an instance of the database
     FirebaseFirestore instance = FirebaseFirestore.instance;
@@ -164,6 +165,7 @@ class FriendService {
     return null;
   }
 
+  // TODO: Remove blurt
   Future<User?> removeFriendRequest(String username, String toUsername) async {
     // Get an instance of the database
     FirebaseFirestore instance = FirebaseFirestore.instance;
@@ -452,5 +454,26 @@ class FriendService {
       }
     }
     return null;
+  }
+
+  Future<Map<String, dynamic>?> getFriendMap(String username) async {
+    FirebaseFirestore instance = FirebaseFirestore.instance;
+
+    Map<String, dynamic> userFriend = {};
+    // Get the user object
+    await instance
+        .collection('users')
+        .where('username', isEqualTo: username)
+        .get()
+        .then((query) {
+      if (query.docs.isNotEmpty) {
+        DocumentSnapshot docSnapshot = query.docs.first;
+        var data = docSnapshot.data();
+        // Get the user's friends
+        userFriend = (data as Map<String, dynamic>);
+      }
+    });
+
+    return userFriend;
   }
 }

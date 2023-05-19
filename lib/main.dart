@@ -1,9 +1,7 @@
 import 'package:blurt/view/auth/register_info.dart';
-import 'package:blurt/view/auth/login.dart';
-import 'package:blurt/view/auth/register.dart';
-import 'package:blurt/view/auth/welcome.dart';
+import 'package:blurt/view/welcome/splash.dart';
 import 'package:blurt/view/main/dashboard.dart';
-import 'package:blurt/view/main/manage_friends.dart';
+import 'package:blurt/view/friends/friends.dart';
 import 'package:blurt/view/profile/profile.dart';
 import 'package:blurt/controllers/auth_service.dart';
 import 'package:blurt/controllers/shared.dart';
@@ -25,7 +23,8 @@ void main() async {
 
   // Start the app
   runApp(MaterialApp(
-      title: 'Blurt',
+      title: 'blurt.',
+      debugShowCheckedModeBanner: false,
       theme: BlurtTheme().primary,
       home: const RoutingController()));
 }
@@ -69,13 +68,16 @@ class _RoutingControllerState extends State<RoutingController> {
     return FutureBuilder(
         builder: (context, snapshot) {
           if (_authState == AuthenticationState.loading) {
-            return const Center(child: CircularProgressIndicator());
+            return const Scaffold(
+                resizeToAvoidBottomInset: false,
+                backgroundColor: BlurtTheme.white,
+                body: Center(child: CircularProgressIndicator()));
           } else if (_authState == AuthenticationState.unauthenticated) {
-            return const MainAuth(page: Register());
+            return MainAuth(page: const Splash());
           } else if (_authState == AuthenticationState.authenticated) {
             return Main(page: const Dashboard());
           } else {
-            return const MainAuth(page: RegisterInfo());
+            return MainAuth(page: RegisterInfo());
           }
         },
         future: _build());
@@ -84,7 +86,7 @@ class _RoutingControllerState extends State<RoutingController> {
 
 /// An instance of the main widget to handle styling
 class Main extends StatelessWidget {
-  final StatefulWidget page;
+  final Widget page;
   String text = "blurt.";
   Main({super.key, required this.page, this.text = "blurt."});
   @override
@@ -111,7 +113,7 @@ class Main extends StatelessWidget {
                 onPressed: () {
                   _manageFriends(context);
                 },
-                color: Colors.white,
+                color: BlurtTheme.white,
               ),
             ])),
         body: page);
@@ -130,9 +132,7 @@ class Main extends StatelessWidget {
     // AuthService authService = AuthService();
     // await authService.signOut();
     Navigator.of(context).push(
-      MaterialPageRoute(
-          builder: (context) =>
-              MainSecondary(page: const ManageFriends(), text: "friends.")),
+      MaterialPageRoute(builder: (context) => MainAuth(page: const Friends())),
     );
   }
 }
@@ -147,7 +147,7 @@ class MainSecondary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: BlurtTheme.white,
         appBar: AppBar(
             automaticallyImplyLeading: false,
             backgroundColor: Theme.of(context).primaryColor,
@@ -162,15 +162,15 @@ class MainSecondary extends StatelessWidget {
 
 /// Create a widget that is customized for authentication workflows
 class MainAuth extends StatelessWidget {
-  final Widget page;
-  const MainAuth({super.key, required this.page});
+  Widget page;
+  MainAuth({super.key, required this.page});
 
   /// ********** BUILD THE WIDGET *********
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         resizeToAvoidBottomInset: false,
-        backgroundColor: Colors.white,
+        backgroundColor: BlurtTheme.white,
         body: page);
   }
 }

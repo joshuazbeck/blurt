@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../assets/style/theme.dart';
 import '../../main.dart';
 import '../../controllers/shared.dart';
 import '../main/dashboard.dart';
@@ -73,7 +74,7 @@ class _LoginFormState extends State<LoginForm> {
         key: LoginForm.loginBntKey,
         icon: Icon(Icons.add),
         onPressed: _submitForm,
-        color: Colors.white,
+        color: BlurtTheme.white,
         iconSize: 40,
       ),
       child: Column(children: <Widget>[
@@ -83,8 +84,10 @@ class _LoginFormState extends State<LoginForm> {
               Spacer(),
               Text("login", style: Theme.of(context).textTheme.headlineSmall),
               SizedBox(height: 17),
-              Text("we’re excited you’re back",
-                  style: Theme.of(context).textTheme.labelLarge),
+              Opacity(
+                  opacity: 0.5,
+                  child: Text("we’re excited you’re back",
+                      style: Theme.of(context).textTheme.labelLarge)),
             ])),
         const Spacer(
           flex: 1,

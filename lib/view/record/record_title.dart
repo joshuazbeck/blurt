@@ -6,13 +6,20 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
+import '../../assets/style/theme.dart';
+import '../../controllers/auth_service.dart';
+import '../../controllers/friend_service.dart';
 import '../../main.dart';
+import '../../model/items/blurt.dart';
+import '../../model/items/friend.dart';
 import '../main/dashboard.dart';
 import '../templates/template.dart';
+import '../../controllers/blurt_service.dart';
 
 /// Widget to add a title to a new recorded blurt
 class RecordTitle extends StatefulWidget {
-  const RecordTitle({super.key});
+  double length;
+  RecordTitle({super.key, required this.length});
 
   @override
   State<RecordTitle> createState() => _RecordTitleState();
@@ -23,6 +30,7 @@ class _RecordTitleState extends State<RecordTitle> {
   void initState() {
     // TODO: implement initState
     super.initState();
+
     initPlayer();
   }
 
@@ -33,11 +41,14 @@ class _RecordTitleState extends State<RecordTitle> {
   Icon _playIcon = const Icon(Icons.play_arrow);
   bool _playing = false;
   bool _isLoading = true;
+  String _recordTitle = "";
+  int _maxLength = 100;
 
   /// Controller for holding the player
   PlayerController controller = PlayerController();
 
   Future<void> initPlayer() async {
+    var blurtService = BlurtService();
     // Create a temporary directory to store the recorded file
     Directory tempDir = await getTemporaryDirectory();
     String path = '${tempDir.path}/temp_audio.wav';
@@ -65,9 +76,9 @@ class _RecordTitleState extends State<RecordTitle> {
   Widget build(BuildContext context) {
     return TemplateForm(
       bottomButton: IconButton(
-        icon: const Icon(Icons.check),
+        icon: const Icon(Icons.send),
         onPressed: () {
-          _returnToDashboard(context);
+          _saveBlurt(context);
         },
         color: Colors.white,
         iconSize: 40,
@@ -78,14 +89,31 @@ class _RecordTitleState extends State<RecordTitle> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             TextFormField(
-              style: TextStyle(
-                  color: Colors.black,
-                  fontFamily: GoogleFonts.josefinSlab().fontFamily),
+              decoration: InputDecoration(
+                  hintText: "your blurt\'s title",
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide.none,
+                  ),
+                  suffixText: '${_recordTitle.length}/${_maxLength}',
+                  suffixStyle: Theme.of(context).textTheme.bodySmall,
+                  counterText: "",
+                  fillColor: Colors.black),
+              cursorRadius: Radius.circular(10),
+              keyboardType: TextInputType.text,
+              maxLines: null,
+              autofocus: true,
+              maxLength: _maxLength,
+              onChanged: (value) {
+                setState(() {
+                  _recordTitle = value;
+                });
+              },
+              style: Theme.of(context).textTheme.bodyLarge,
               validator: (value) {
                 return null;
               },
             ),
-            const SizedBox(height: 40),
+            const SizedBox(height: 10),
             (!_isLoading)
                 ? Container(
                     decoration: BoxDecoration(
@@ -96,7 +124,7 @@ class _RecordTitleState extends State<RecordTitle> {
                       children: [
                         IconButton(
                             icon: _playIcon,
-                            color: Colors.white,
+                            color: BlurtTheme.white,
                             iconSize: 30,
                             onPressed: _pauseOrPlay),
                         Expanded(
@@ -104,8 +132,8 @@ class _RecordTitleState extends State<RecordTitle> {
                                 size: const Size(100.0, 70.0),
                                 enableSeekGesture: true,
                                 playerWaveStyle: const PlayerWaveStyle(
-                                    liveWaveColor: Colors.white,
-                                    fixedWaveColor: Colors.white24,
+                                    liveWaveColor: BlurtTheme.white,
+                                    fixedWaveColor: BlurtTheme.whiteLight,
                                     showSeekLine: false,
                                     waveThickness: 6,
                                     spacing: 9,
@@ -152,7 +180,21 @@ class _RecordTitleState extends State<RecordTitle> {
     }
   }
 
-  void _returnToDashboard(BuildContext context) async {
+  void _saveBlurt(BuildContext context) async {
+    // Save the blurt
+
+    BlurtService bS = new BlurtService();
+    AuthService aS = new AuthService();
+    FullUser? fullUser = await aS.getAuthenticatedUser();
+
+    //TODO: Impelment an actual audio and image path
+    if (fullUser?.username != null) {
+      const audioPath = "";
+      var length = widget.length;
+      var title = _recordTitle;
+      Blurt b = Blurt(null, audioPath, title, length);
+      await bS.addBlurt(fullUser!.username!, b);
+    }
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (context) => Main(page: const Dashboard())),
       (Route<dynamic> route) => false,

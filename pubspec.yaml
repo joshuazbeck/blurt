@@ -52,7 +52,18 @@ dependencies:
   snappy_list_view: ^0.0.7
   scrollable_positioned_list: ^0.3.6
   mockito: ^5.4.0
+  flutter_launcher_icons: ^0.13.1
+  badges: ^3.1.1
+  scroll_snap_list: ^0.9.1
 
+
+flutter_launcher_icons:
+  image_path: "lib/assets/icon/icon.png"
+  ios: true
+  android: true
+  remove_alpha_ios: true
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "lib/assets/icon/icon.png"
 
 dev_dependencies:
   flutter_test:
@@ -81,8 +92,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - lib/assets/google-fonts
+  assets:
+    - lib/assets/icon/
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 

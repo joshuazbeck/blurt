@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
+import '../../assets/style/theme.dart';
 import '../../main.dart';
 import '../../controllers/auth_service.dart';
 import '../main/dashboard.dart';
@@ -108,7 +109,7 @@ class _RegisterPersonalFormState extends State<RegisterPersonalForm> {
         key: RegisterPersonalForm.addInfoBnt,
         icon: Icon(Icons.check_rounded),
         onPressed: _addInfo,
-        color: Colors.white,
+        color: BlurtTheme.white,
         iconSize: 40,
       ),
       child: Column(children: <Widget>[
@@ -119,8 +120,10 @@ class _RegisterPersonalFormState extends State<RegisterPersonalForm> {
               Text("personal information",
                   style: Theme.of(context).textTheme.headlineSmall),
               const SizedBox(height: 17),
-              Text("we don’t sell this stuff",
-                  style: Theme.of(context).textTheme.labelLarge)
+              Opacity(
+                  opacity: 0.5,
+                  child: Text("we don’t sell this stuff",
+                      style: Theme.of(context).textTheme.labelLarge))
             ])),
         const Spacer(flex: 1),
         TextFormField(

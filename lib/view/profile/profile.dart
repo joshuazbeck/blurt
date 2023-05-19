@@ -14,6 +14,23 @@ class Profile extends StatefulWidget {
 }
 
 class _ProfileState extends State<Profile> {
+  String _username = "";
+
+  @override
+  void initState() {
+    super.initState();
+    initUsername();
+  }
+
+  Future<void> initUsername() async {
+    String? u = (await AuthService().getAuthenticatedUser())?.username;
+    if (u != null) {
+      setState(() {
+        _username = u;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Template(
@@ -26,16 +43,20 @@ class _ProfileState extends State<Profile> {
                 MaterialStateProperty.all(Theme.of(context).primaryColor)),
         child: const Text("back"),
       ),
-      child: Center(
-          child: ElevatedButton(
-        child: const Text("Log out"),
-        style: ButtonStyle(
-            backgroundColor:
-                MaterialStateProperty.all(Theme.of(context).primaryColor)),
-        onPressed: () {
-          _logOut(context);
-        },
-      )),
+      child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              child: Text("Log out '$_username'"),
+              style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all(
+                      Theme.of(context).primaryColor)),
+              onPressed: () {
+                _logOut(context);
+              },
+            )
+          ]),
     );
   }
 
@@ -44,8 +65,7 @@ class _ProfileState extends State<Profile> {
     await AuthService().signOut();
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(
-          builder: (context) => const MainAuth(page: const Login())),
+      MaterialPageRoute(builder: (context) => MainAuth(page: Login())),
     );
   }
 }
