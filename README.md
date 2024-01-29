@@ -6,4 +6,4 @@ Solution: **A cross-platform social media app for users to share one short 15-se
 
 This project will be built using Dart on Flutter with a Node.JS backend hosted on Google Cloud Run.  Files will be stored remotely using Google Cloud Storage.
 
-Copyright 2023 Joshua Beck
+Copyright © 2023 Joshua Beck
